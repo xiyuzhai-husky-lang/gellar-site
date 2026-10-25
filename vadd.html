@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kernels/vadd.cu specs</title><style>
+:root {
+  --bg: #fbfaf7; --panel: #ffffff; --ink: #1d1d1f; --muted: #6b6b70; --rule: #e6e3dc;
+  --code-bg: #f6f4ef; --hl: #fff1c2; --link: #fff7dc;
+  --kw: #8a3ffc; --bi: #0f6fb8; --nu: #b45309; --st: #15803d; --cm: #8b8b93;
+  --ok: #157f3b; --ok-bg: #e3f4e8; --ok-rule: #2f9e57; --ok-hover: #f1faf3;
+  --warn: #9a6100; --warn-bg: #fdf0d5; --bad: #b42318; --bad-bg: #fde4e1;
+  --idle: #5b5b63; --idle-bg: #ececef; --note-rule: #b9b8bd;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141416; --panel: #1b1b1e; --ink: #e8e6e1; --muted: #9a9aa2; --rule: #2c2c31;
+    --code-bg: #18181b; --hl: #3a3215; --link: #2a2614;
+    --kw: #c4a1ff; --bi: #6cb6ff; --nu: #f0a35e; --st: #6fd08c; --cm: #74747c;
+    --ok: #6fd08c; --ok-bg: #16301f; --ok-rule: #3f9e63; --ok-hover: #182a1e;
+    --warn: #f0c35e; --warn-bg: #352a12; --bad: #ff8a80; --bad-bg: #3a1714;
+    --idle: #b0b0b8; --idle-bg: #2a2a2f; --note-rule: #55555c;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1320px; margin: 0 auto; padding: 28px 16px 64px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px 20px; margin-bottom: 18px; }
+h1 { font: 600 22px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; margin: 0; }
+.meta { color: var(--muted); font-size: 13px; }
+.meta code { font-size: 12.5px; }
+.summary { display: flex; gap: 8px; margin-left: auto; }
+.grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px; align-items: start; }
+@media (max-width: 960px) { .grid { grid-template-columns: minmax(0, 1fr); } .summary { margin-left: 0; } }
+section h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+  font-weight: 600; margin: 0 0 8px; }
+.code { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 8px; overflow-x: auto;
+  font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 8px 0; }
+.code .ln { display: flex; padding: 0 14px 0 0; white-space: pre; }
+.code .ln .n { flex: none; width: 3.2em; text-align: right; padding-right: 14px; color: var(--muted);
+  user-select: none; }
+.code .ln.k .n { box-shadow: inset 2px 0 var(--bi); }
+.code .ln.on { background: var(--hl); }
+.code .ln.link { background: var(--link); }
+.kw { color: var(--kw); } .bi { color: var(--bi); } .nu { color: var(--nu); } .st { color: var(--st); }
+.cm { color: var(--cm); font-style: italic; }
+.sticky { position: sticky; top: 16px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--muted);
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 8px 12px; margin-bottom: 14px; }
+.cards { display: flex; flex-direction: column; gap: 14px; }
+.card { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 22px; }
+.card .head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
+.sig { font: 600 17px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.sig .k { color: var(--bi); } .sig .ty { color: var(--kw); font-weight: 500; } .sig var { font-style: normal; font-weight: 500; }
+.sig .launch { font: 500 12px system-ui, sans-serif; color: var(--muted); margin-left: 10px; }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; margin-left: auto; }
+.pill.proved { color: var(--ok); background: var(--ok-bg); }
+.pill.sorry { color: var(--warn); background: var(--warn-bg); }
+.pill.error, .pill.missing { color: var(--bad); background: var(--bad-bg); }
+.pill.unchecked { color: var(--idle); background: var(--idle-bg); }
+.m { font-family: "STIX Two Text", "Cambria Math", "Latin Modern Math", Georgia, serif; font-size: 17px; }
+.m var { font-style: italic; }
+.m .b { font-family: ui-monospace, Menlo, monospace; font-size: 14px; color: var(--bi); font-style: normal; }
+.m .sum { font-size: 19px; } .m .sum sub { font-size: 11px; font-family: "STIX Two Text", Georgia, serif; }
+.word { color: var(--muted); font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14px; }
+.auto { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14.5px; }
+.lab { display: inline-block; width: 84px; font-size: 11.5px; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--muted); font-weight: 600; }
+.tag { display: inline-block; font: 600 10.5px/1 ui-sans-serif, sans-serif; letter-spacing: .06em; text-transform: uppercase;
+  border-radius: 4px; padding: 3px 6px; vertical-align: 2px; white-space: nowrap; }
+.tag.c { color: var(--ok); background: var(--ok-bg); } .tag.n { color: var(--idle); background: var(--idle-bg); }
+.rows { display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.row .tag { margin-left: auto; }
+.row .cond { margin-left: auto; } .row .cond + .tag { margin-left: 0; }
+.chk { border-left: 3px solid var(--ok-rule); padding: 4px 0 4px 12px; cursor: help; }
+.chk:hover { background: var(--ok-hover); }
+.note { border-left: 3px dashed var(--note-rule); padding: 4px 0 4px 12px; color: var(--muted); font-style: italic; margin-bottom: 10px; }
+details { margin-top: 14px; font-size: 13px; color: var(--muted); }
+details summary { cursor: pointer; }
+details pre { font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code-bg);
+  border-radius: 6px; padding: 10px 12px; color: var(--ink); white-space: pre-wrap; margin: 8px 0 0; }
+.msgs { margin: 10px 0 0; padding: 8px 12px; border-radius: 6px; background: var(--bad-bg); color: var(--bad);
+  font: 12px/1.5 ui-monospace, monospace; white-space: pre-wrap; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em;
+  background: var(--code-bg); padding: 1px 4px; border-radius: 4px; }
+.gen { margin-top: 28px; }
+.empty { color: var(--muted); background: var(--panel); border: 1px dashed var(--rule); border-radius: 10px; padding: 16px; }
+table { border-collapse: collapse; width: 100%; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+td, th { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: baseline; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+tr:last-child td { border-bottom: none; }
+td .pill { margin-left: 0; }
+a { color: inherit; }
+</style></head>
+<body><main>
+<header>
+  <h1>kernels/vadd.cu</h1>
+  <div class="meta"><a href="index.html">all kernels</a> · specs in <code>Specs/Vadd.lean</code></div>
+  <div class="summary"><span class="pill proved">1 proved</span>
+    
+    
+    
+    </div>
+</header>
+<div class="grid">
+  <section class="sticky"><h2>CUDA source</h2>
+    <div class="code" id="src"><div class="ln k"><span class="n">1</span><span><span class="kw">__global__</span> <span class="kw">void</span> vadd(<span class="kw">int</span>* c, <span class="kw">int</span>* a, <span class="kw">int</span>* b, <span class="kw">int</span> n) {</span></div><div class="ln k"><span class="n">2</span><span>  <span class="kw">int</span> i = <span class="bi">blockIdx.x</span> * <span class="bi">blockDim.x</span> + <span class="bi">threadIdx.x</span>;</span></div><div class="ln k"><span class="n">3</span><span>  <span class="kw">if</span> (i &lt; n) c[i] = a[i] + b[i];</span></div><div class="ln k"><span class="n">4</span><span>}</span></div></div>
+  </section>
+  <section><h2>Contracts</h2>
+    <div class="legend"><span><span class="tag c">checked</span> becomes a Lean statement and is proved · hover to see it</span><span><span class="tag n">note</span> prose for the reader · not checked</span></div>
+    <div class="cards">
+      <article class="card" data-lines="1-4">
+        <div class="head"><span class="sig"><span class="k">vadd</span>(<span class="ty">int*</span> <var>c</var>, <span class="ty">int*</span> <var>a</var>, <span class="ty">int*</span> <var>b</var>, <span class="ty">int</span> <var>n</var>) <span class="launch">1-D launch</span></span><span class="pill proved">✓ proved</span></div>
+        <div class="note row"><span><code>c ← a + b</code> on the first <code>n</code> cells. The sums must fit in an <code>int</code>.</span><span class="tag n">note</span></div>
+        <div class="rows">
+          <div class="chk row" title="Lean: n ≤ gridDim * blockDim"><span class="lab">Requires</span><span class="m"><var>n</var> ≤ <span class="b">gridDim</span> · <span class="b">blockDim</span></span><span class="tag c">checked</span></div>
+          <div class="chk row" title="Lean: gridDim * blockDim ≤ 2^31"><span class="lab">Requires</span><span class="m"><span class="b">gridDim</span> · <span class="b">blockDim</span> ≤ 2<sup>31</sup></span><span class="tag c">checked</span></div>
+          <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; n → int32 (a[i] &#43; b[i])"><span class="lab">Requires</span><span class="m">−2<sup>31</sup> ≤ <var>a</var>[<var>i</var>] + <var>b</var>[<var>i</var>] &lt; 2<sup>31</sup></span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; <var>n</var></span><span class="tag c">checked</span></div>
+          <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; n → c[i] = a[i] &#43; b[i]"><span class="lab">Ensures</span><span class="m"><var>c</var>[<var>i</var>] = <var>a</var>[<var>i</var>] + <var>b</var>[<var>i</var>]</span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; <var>n</var></span><span class="tag c">checked</span></div>
+          <div class="chk row" title="Lean: ∀ i, (i &lt; 0 ∨ n ≤ i) → c[i] = old(c[i])"><span class="lab">Ensures</span><span class="m"><var>c</var>[<var>i</var>] <span class="word">unchanged</span></span><span class="m cond"><span class="word">for every other</span> <var>i</var></span><span class="tag c">checked</span></div>
+          <div class="chk row" title="Lean: ∀ i, a[i] = old(a[i])"><span class="lab">Ensures</span><span class="m"><var>a</var> <span class="word">unchanged</span></span><span class="tag c">checked</span></div>
+          <div class="chk row" title="Lean: ∀ i, b[i] = old(b[i])"><span class="lab">Ensures</span><span class="m"><var>b</var> <span class="word">unchanged</span></span><span class="tag c">checked</span></div>
+          <div class="chk row" title="Lean: Typed args mem sh → … → vadd.Safe gd bd ids args mem sh fl ∧ vadd.DRF gd bd ids args mem sh fl   (part of every contract)"><span class="m"><span class="auto">No data race (two threads touch a cell only if both read it or both add to it atomically); barriers are uniform; every loop terminates; no <code>int</code> operation overflows or divides by zero; every shared-memory access is in bounds. Every <code>int</code> parameter and cell is assumed to hold a 32-bit value, as its type says.</span></span><span class="tag c">checked · automatic</span></div>
+        </div>
+        
+        <details><summary>Lean: the contract as written, proved as <code>vadd_contract</code></summary><pre>/-- `c ← a &#43; b` on the first `n` cells. The sums must fit in an `int`. -/
+contract vadd (c : int*) (a : int*) (b : int*) (n : int) where
+  requires n ≤ gridDim * blockDim
+  requires gridDim * blockDim ≤ 2^31
+  requires int32 (a[i] &#43; b[i])  when 0 ≤ i &lt; n
+  ensures  c[i] = a[i] &#43; b[i]   when 0 ≤ i &lt; n
+  ensures  c[i] = old(c[i])     otherwise
+  unchanged a
+  unchanged b</pre></details>
+      </article>
+    </div>
+  </section>
+</div>
+<section class="gen"><details><summary>Generated Lean (<code>Generated/Vadd.lean</code>): the kernel as <code>cu2lean</code> read it, each line tagged with its source line</summary>
+  <div class="code" id="gen" style="margin-top:8px"><div class="ln" data-src="0"><span class="n">1</span><span><span class="cm">-- Generated by cu2lean from kernels/vadd.cu. Do not edit: rerun `go run ./cmd/cu2lean`.</span></span></div><div class="ln" data-src="0"><span class="n">2</span><span><span class="kw">import</span> Gellar.Kernel.Semantics</span></div><div class="ln" data-src="0"><span class="n">3</span><span></span></div><div class="ln" data-src="0"><span class="n">4</span><span><span class="kw">namespace</span> Generated.Vadd</span></div><div class="ln" data-src="0"><span class="n">5</span><span></span></div><div class="ln" data-src="0"><span class="n">6</span><span><span class="kw">open</span> Gellar.Kernel</span></div><div class="ln" data-src="0"><span class="n">7</span><span></span></div><div class="ln" data-src="1"><span class="n">8</span><span>/<span class="cm">-- `vadd` at kernels/vadd.cu:1-4 -/</span></span></div><div class="ln" data-src="1"><span class="n">9</span><span><span class="kw">def</span> vadd : Kernel <span class="kw">where</span></span></div><div class="ln" data-src="1"><span class="n">10</span><span>  name := <span class="st">&#34;vadd&#34;</span></span></div><div class="ln" data-src="1"><span class="n">11</span><span>  arrays := [<span class="st">&#34;c&#34;</span>, <span class="st">&#34;a&#34;</span>, <span class="st">&#34;b&#34;</span>]</span></div><div class="ln" data-src="1"><span class="n">12</span><span>  scalars := [<span class="st">&#34;n&#34;</span>]</span></div><div class="ln" data-src="1"><span class="n">13</span><span>  body :=</span></div><div class="ln" data-src="1"><span class="n">14</span><span>    .block [  <span class="cm">-- vadd.cu:1</span></span></div><div class="ln" data-src="2"><span class="n">15</span><span>      .assign <span class="st">&#34;i&#34;</span> (.bin .add (.bin .mul (.blockIdx .x) (.blockDim .x)) (.threadIdx .x)),  <span class="cm">-- vadd.cu:2</span></span></div><div class="ln" data-src="3"><span class="n">16</span><span>      .ite (.bin .lt (.var <span class="st">&#34;i&#34;</span>) (.var <span class="st">&#34;n&#34;</span>))  <span class="cm">-- vadd.cu:3</span></span></div><div class="ln" data-src="3"><span class="n">17</span><span>        (.store <span class="st">&#34;c&#34;</span> (.var <span class="st">&#34;i&#34;</span>) (.bin .add (.load <span class="st">&#34;a&#34;</span> (.var <span class="st">&#34;i&#34;</span>)) (.load <span class="st">&#34;b&#34;</span> (.var <span class="st">&#34;i&#34;</span>))))  <span class="cm">-- vadd.cu:3</span></span></div><div class="ln" data-src="3"><span class="n">18</span><span>        (.skip)  <span class="cm">-- vadd.cu:3</span></span></div><div class="ln" data-src="0"><span class="n">19</span><span>    ]</span></div><div class="ln" data-src="0"><span class="n">20</span><span></span></div><div class="ln" data-src="0"><span class="n">21</span><span><span class="kw">end</span> Generated.Vadd</span></div></div>
+</details>
+<details><summary>Proof lemmas in <code>Specs/Vadd.lean</code> (1)</summary><pre>proved  vadd_log
+</pre></details>
+</section>
+</main><script>
+const src = [...document.querySelectorAll('#src .ln')];
+const gen = [...document.querySelectorAll('#gen .ln')];
+const clear = () => document.querySelectorAll('.on, .link').forEach(e => e.classList.remove('on', 'link'));
+const srcLine = n => src[n - 1];
+src.forEach((el, i) => {
+  el.addEventListener('mouseenter', () => { clear(); el.classList.add('on');
+    gen.forEach(g => { if (+g.dataset.src === i + 1) g.classList.add('link'); }); });
+});
+gen.forEach(el => {
+  el.addEventListener('mouseenter', () => { clear(); const s = +el.dataset.src; if (!s) return;
+    el.classList.add('on'); srcLine(s)?.classList.add('link');
+    gen.forEach(g => { if (+g.dataset.src === s && g !== el) g.classList.add('link'); }); });
+});
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('mouseenter', () => { clear();
+    (card.dataset.lines || '').split(' ').filter(Boolean).forEach(r => {
+      const [a, b] = r.split('-').map(Number);
+      for (let n = a; n <= b; n++) srcLine(n)?.classList.add('link'); }); });
+});
+document.querySelectorAll('.code, .cards').forEach(e => e.addEventListener('mouseleave', clear));
+</script></body></html>
