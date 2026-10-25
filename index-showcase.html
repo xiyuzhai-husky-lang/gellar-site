@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>gellar</title><style>
+:root {
+  --bg: #fbfaf7; --panel: #ffffff; --ink: #1d1d1f; --muted: #6b6b70; --rule: #e6e3dc;
+  --code-bg: #f6f4ef; --hl: #fff1c2; --link: #fff7dc;
+  --kw: #8a3ffc; --bi: #0f6fb8; --nu: #b45309; --st: #15803d; --cm: #8b8b93;
+  --ok: #157f3b; --ok-bg: #e3f4e8; --ok-rule: #2f9e57; --ok-hover: #f1faf3;
+  --warn: #9a6100; --warn-bg: #fdf0d5; --bad: #b42318; --bad-bg: #fde4e1;
+  --idle: #5b5b63; --idle-bg: #ececef; --note-rule: #b9b8bd;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141416; --panel: #1b1b1e; --ink: #e8e6e1; --muted: #9a9aa2; --rule: #2c2c31;
+    --code-bg: #18181b; --hl: #3a3215; --link: #2a2614;
+    --kw: #c4a1ff; --bi: #6cb6ff; --nu: #f0a35e; --st: #6fd08c; --cm: #74747c;
+    --ok: #6fd08c; --ok-bg: #16301f; --ok-rule: #3f9e63; --ok-hover: #182a1e;
+    --warn: #f0c35e; --warn-bg: #352a12; --bad: #ff8a80; --bad-bg: #3a1714;
+    --idle: #b0b0b8; --idle-bg: #2a2a2f; --note-rule: #55555c;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1320px; margin: 0 auto; padding: 28px 16px 64px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px 20px; margin-bottom: 18px; }
+h1 { font: 600 22px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; margin: 0; }
+.meta { color: var(--muted); font-size: 13px; }
+.meta code { font-size: 12.5px; }
+.summary { display: flex; gap: 8px; margin-left: auto; }
+.grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px; align-items: start; }
+@media (max-width: 960px) { .grid { grid-template-columns: minmax(0, 1fr); } .summary { margin-left: 0; } }
+section h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+  font-weight: 600; margin: 0 0 8px; }
+.code { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 8px; overflow-x: auto;
+  font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 8px 0; }
+.code .ln { display: flex; padding: 0 14px 0 0; white-space: pre; }
+.code .ln .n { flex: none; width: 3.2em; text-align: right; padding-right: 14px; color: var(--muted);
+  user-select: none; }
+.code .ln.k .n { box-shadow: inset 2px 0 var(--bi); }
+.code .ln.on { background: var(--hl); }
+.code .ln.link { background: var(--link); }
+.kw { color: var(--kw); } .bi { color: var(--bi); } .nu { color: var(--nu); } .st { color: var(--st); }
+.cm { color: var(--cm); font-style: italic; }
+.sticky { position: sticky; top: 16px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--muted);
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 8px 12px; margin-bottom: 14px; }
+.cards { display: flex; flex-direction: column; gap: 14px; }
+.card { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 22px; }
+.card .head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
+.sig { font: 600 17px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.sig .k { color: var(--bi); } .sig .ty { color: var(--kw); font-weight: 500; } .sig var { font-style: normal; font-weight: 500; }
+.sig .launch { font: 500 12px system-ui, sans-serif; color: var(--muted); margin-left: 10px; }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; margin-left: auto; }
+.pill.proved { color: var(--ok); background: var(--ok-bg); }
+.pill.sorry { color: var(--warn); background: var(--warn-bg); }
+.pill.error, .pill.missing { color: var(--bad); background: var(--bad-bg); }
+.pill.unchecked { color: var(--idle); background: var(--idle-bg); }
+.m { font-family: "STIX Two Text", "Cambria Math", "Latin Modern Math", Georgia, serif; font-size: 17px; }
+.m var { font-style: italic; }
+.m .b { font-family: ui-monospace, Menlo, monospace; font-size: 14px; color: var(--bi); font-style: normal; }
+.m .sum { font-size: 19px; } .m .sum sub { font-size: 11px; font-family: "STIX Two Text", Georgia, serif; }
+.word { color: var(--muted); font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14px; }
+.auto { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14.5px; }
+.lab { display: inline-block; width: 84px; font-size: 11.5px; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--muted); font-weight: 600; }
+.tag { display: inline-block; font: 600 10.5px/1 ui-sans-serif, sans-serif; letter-spacing: .06em; text-transform: uppercase;
+  border-radius: 4px; padding: 3px 6px; vertical-align: 2px; white-space: nowrap; }
+.tag.c { color: var(--ok); background: var(--ok-bg); } .tag.n { color: var(--idle); background: var(--idle-bg); }
+.rows { display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.row .tag { margin-left: auto; }
+.row .cond { margin-left: auto; } .row .cond + .tag { margin-left: 0; }
+.chk { border-left: 3px solid var(--ok-rule); padding: 4px 0 4px 12px; cursor: help; }
+.chk:hover { background: var(--ok-hover); }
+.note { border-left: 3px dashed var(--note-rule); padding: 4px 0 4px 12px; color: var(--muted); font-style: italic; margin-bottom: 10px; }
+details { margin-top: 14px; font-size: 13px; color: var(--muted); }
+details summary { cursor: pointer; }
+details pre { font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code-bg);
+  border-radius: 6px; padding: 10px 12px; color: var(--ink); white-space: pre-wrap; margin: 8px 0 0; }
+.msgs { margin: 10px 0 0; padding: 8px 12px; border-radius: 6px; background: var(--bad-bg); color: var(--bad);
+  font: 12px/1.5 ui-monospace, monospace; white-space: pre-wrap; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em;
+  background: var(--code-bg); padding: 1px 4px; border-radius: 4px; }
+.gen { margin-top: 28px; }
+.empty { color: var(--muted); background: var(--panel); border: 1px dashed var(--rule); border-radius: 10px; padding: 16px; }
+table { border-collapse: collapse; width: 100%; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+td, th { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: baseline; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+tr:last-child td { border-bottom: none; }
+td .pill { margin-left: 0; }
+a { color: inherit; }
+
+.hero { margin: 10px 0 26px; max-width: 72ch; }
+.hero p { font-size: 17px; line-height: 1.6; margin: 10px 0; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 18px 0 28px; }
+.fact { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; }
+.fact b { display: block; font: 600 24px/1.1 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.fact span { color: var(--muted); font-size: 13px; }
+.prose { max-width: 72ch; }
+.prose p { margin: 8px 0 12px; }
+.prose h2 { margin-top: 30px; }
+.land { border-left: 3px solid var(--ok-rule); padding: 6px 14px; margin: 12px 0; background: var(--panel); border-radius: 0 8px 8px 0; }
+.land code { font-weight: 600; }
+.land .needs { color: var(--muted); font-size: 13px; }
+.limits li { margin: 6px 0; }
+table.suite td, table.suite th { vertical-align: top; }
+table.suite td:last-child { white-space: nowrap; }
+.pill { white-space: nowrap; }
+footer { color: var(--muted); font-size: 13px; margin-top: 40px; }
+.ex { margin: 14px 0 26px; }
+.exhead { margin-bottom: 8px; }
+.ex .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+</style></head>
+<body><main>
+<header><h1>gellar</h1><div class="meta">CUDA kernels proved correct in Lean, against the PTX memory consistency model · <a href="index.html">all kernels</a></div></header>
+
+<section class="ex">
+<div class="exhead"><a href="vadd.html"><code>vadd</code></a> <span class="meta"></span></div>
+<div class="grid">
+  <div class="code"><div class="ln"><span class="n">1</span><span><span class="kw">__global__</span> <span class="kw">void</span> vadd(<span class="kw">int</span>* c, <span class="kw">int</span>* a, <span class="kw">int</span>* b, <span class="kw">int</span> n) {</span></div><div class="ln"><span class="n">2</span><span>  <span class="kw">int</span> i = <span class="bi">blockIdx.x</span> * <span class="bi">blockDim.x</span> + <span class="bi">threadIdx.x</span>;</span></div><div class="ln"><span class="n">3</span><span>  <span class="kw">if</span> (i &lt; n) c[i] = a[i] + b[i];</span></div><div class="ln"><span class="n">4</span><span>}</span></div></div>
+  <article class="card">
+    <div class="head"><span class="sig"><span class="k">vadd</span>(<span class="ty">int*</span> <var>c</var>, <span class="ty">int*</span> <var>a</var>, <span class="ty">int*</span> <var>b</var>, <span class="ty">int</span> <var>n</var>) <span class="launch">1-D launch</span></span><span class="pill proved">✓ proved</span></div>
+    <div class="rows">
+      <div class="chk row" title="Lean: n ≤ gridDim * blockDim"><span class="lab">Requires</span><span class="m"><var>n</var> ≤ <span class="b">gridDim</span> · <span class="b">blockDim</span></span></div>
+      <div class="chk row" title="Lean: gridDim * blockDim ≤ 2^31"><span class="lab">Requires</span><span class="m"><span class="b">gridDim</span> · <span class="b">blockDim</span> ≤ 2<sup>31</sup></span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; n → int32 (a[i] &#43; b[i])"><span class="lab">Requires</span><span class="m">−2<sup>31</sup> ≤ <var>a</var>[<var>i</var>] + <var>b</var>[<var>i</var>] &lt; 2<sup>31</sup></span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; <var>n</var></span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; n → c[i] = a[i] &#43; b[i]"><span class="lab">Ensures</span><span class="m"><var>c</var>[<var>i</var>] = <var>a</var>[<var>i</var>] + <var>b</var>[<var>i</var>]</span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; <var>n</var></span></div>
+      <div class="chk row" title="Lean: ∀ i, (i &lt; 0 ∨ n ≤ i) → c[i] = old(c[i])"><span class="lab">Ensures</span><span class="m"><var>c</var>[<var>i</var>] <span class="word">unchanged</span></span><span class="m cond"><span class="word">for every other</span> <var>i</var></span></div>
+      <div class="chk row" title="Lean: ∀ i, a[i] = old(a[i])"><span class="lab">Ensures</span><span class="m"><var>a</var> <span class="word">unchanged</span></span></div>
+      <div class="chk row" title="Lean: ∀ i, b[i] = old(b[i])"><span class="lab">Ensures</span><span class="m"><var>b</var> <span class="word">unchanged</span></span></div>
+      <div class="chk row" title="Lean: Typed args mem sh → … → vadd.Safe gd bd ids args mem sh fl ∧ vadd.DRF gd bd ids args mem sh fl   (part of every contract)"><span class="m"><span class="auto">No data race (two threads touch a cell only if both read it or both add to it atomically); barriers are uniform; every loop terminates; no <code>int</code> operation overflows or divides by zero; every shared-memory access is in bounds. Every <code>int</code> parameter and cell is assumed to hold a 32-bit value, as its type says.</span></span></div>
+    </div>
+    <details><summary>Lean</summary><pre>/-- `c ← a &#43; b` on the first `n` cells. The sums must fit in an `int`. -/
+contract vadd (c : int*) (a : int*) (b : int*) (n : int) where
+  requires n ≤ gridDim * blockDim
+  requires gridDim * blockDim ≤ 2^31
+  requires int32 (a[i] &#43; b[i])  when 0 ≤ i &lt; n
+  ensures  c[i] = a[i] &#43; b[i]   when 0 ≤ i &lt; n
+  ensures  c[i] = old(c[i])     otherwise
+  unchanged a
+  unchanged b</pre></details>
+  </article>
+</div>
+</section><section class="ex">
+<div class="exhead"><a href="dot.html"><code>dot</code></a> <span class="meta">shared-memory reduction across barriers in a loop, then atomicAdd across blocks</span></div>
+<div class="grid">
+  <div class="code"><div class="ln"><span class="n">1</span><span><span class="kw">__global__</span> <span class="kw">void</span> dot(<span class="kw">int</span>* out, <span class="kw">int</span>* x, <span class="kw">int</span>* y, <span class="kw">int</span> n) {</span></div><div class="ln"><span class="n">2</span><span>  <span class="kw">__shared__</span> <span class="kw">int</span> s[<span class="nu">256</span>];</span></div><div class="ln"><span class="n">3</span><span>  <span class="kw">int</span> tid = <span class="bi">threadIdx.x</span>;</span></div><div class="ln"><span class="n">4</span><span>  <span class="kw">int</span> i = <span class="bi">blockIdx.x</span> * <span class="bi">blockDim.x</span> + tid;</span></div><div class="ln"><span class="n">5</span><span>  <span class="kw">if</span> (i &lt; n) s[tid] = x[i] * y[i]; <span class="kw">else</span> s[tid] = <span class="nu">0</span>;</span></div><div class="ln"><span class="n">6</span><span>  <span class="bi">__syncthreads</span>();</span></div><div class="ln"><span class="n">7</span><span>  <span class="kw">for</span> (<span class="kw">int</span> d = <span class="bi">blockDim.x</span> / <span class="nu">2</span>; d &gt; <span class="nu">0</span>; d /= <span class="nu">2</span>) {</span></div><div class="ln"><span class="n">8</span><span>    <span class="kw">if</span> (tid &lt; d) s[tid] += s[tid + d];</span></div><div class="ln"><span class="n">9</span><span>    <span class="bi">__syncthreads</span>();</span></div><div class="ln"><span class="n">10</span><span>  }</span></div><div class="ln"><span class="n">11</span><span>  <span class="kw">if</span> (tid == <span class="nu">0</span>) <span class="bi">atomicAdd</span>(&amp;out[<span class="nu">0</span>], s[<span class="nu">0</span>]);</span></div><div class="ln"><span class="n">12</span><span>}</span></div></div>
+  <article class="card">
+    <div class="head"><span class="sig"><span class="k">dot</span>(<span class="ty">int*</span> <var>out</var>, <span class="ty">int*</span> <var>x</var>, <span class="ty">int*</span> <var>y</var>, <span class="ty">int</span> <var>n</var>) <span class="launch">1-D launch</span></span><span class="pill proved">✓ proved</span></div>
+    <div class="rows">
+      <div class="chk row" title="Lean: blockDim ≤ 256"><span class="lab">Requires</span><span class="m"><span class="b">blockDim</span> ≤ 256</span></div>
+      <div class="chk row" title="Lean: ∃ p : Nat, blockDim = 2 ^ p"><span class="lab">Requires</span><span class="m">∃ <var>p</var>, <span class="b">blockDim</span> = 2<sup>p</sup></span></div>
+      <div class="chk row" title="Lean: n ≤ gridDim * blockDim"><span class="lab">Requires</span><span class="m"><var>n</var> ≤ <span class="b">gridDim</span> · <span class="b">blockDim</span></span></div>
+      <div class="chk row" title="Lean: gridDim * blockDim ≤ 2^31"><span class="lab">Requires</span><span class="m"><span class="b">gridDim</span> · <span class="b">blockDim</span> ≤ 2<sup>31</sup></span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; n → -2^23 ≤ x[i] * y[i] ∧ x[i] * y[i] &lt; 2^23"><span class="lab">Requires</span><span class="m">− 2<sup>23</sup> ≤ <var>x</var>[<var>i</var>] · <var>y</var>[<var>i</var>] ∧ <var>x</var>[<var>i</var>] · <var>y</var>[<var>i</var>] &lt; 2<sup>23</sup></span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; <var>n</var></span></div>
+      <div class="chk row" title="Lean: int32 (out[0] &#43; sum i &lt; n, x[i] * y[i])"><span class="lab">Requires</span><span class="m">−2<sup>31</sup> ≤ <var>out</var>[0] + <span class="sum">Σ<sub><var>i</var> &lt; <var>n</var></sub></span><var>x</var>[<var>i</var>] · <var>y</var>[<var>i</var>] &lt; 2<sup>31</sup></span></div>
+      <div class="chk row" title="Lean: out[0] = old(out[0]) &#43; sum i &lt; n, x[i] * y[i]"><span class="lab">Ensures</span><span class="m"><var>out</var>[0] = <span class="word">old</span>(<var>out</var>[0]) + <span class="sum">Σ<sub><var>i</var> &lt; <var>n</var></sub></span><var>x</var>[<var>i</var>] · <var>y</var>[<var>i</var>]</span></div>
+      <div class="chk row" title="Lean: ∀ (i : Int), i ≠ 0 → out[i] = old(out[i])"><span class="lab">Ensures</span><span class="m">∀ <var>i</var>, <var>i</var> ≠ 0 ⇒ <var>out</var>[<var>i</var>] = <span class="word">old</span>(<var>out</var>[<var>i</var>])</span></div>
+      <div class="chk row" title="Lean: ∀ i, x[i] = old(x[i])"><span class="lab">Ensures</span><span class="m"><var>x</var> <span class="word">unchanged</span></span></div>
+      <div class="chk row" title="Lean: ∀ i, y[i] = old(y[i])"><span class="lab">Ensures</span><span class="m"><var>y</var> <span class="word">unchanged</span></span></div>
+      <div class="chk row" title="Lean: Typed args mem sh → … → dot.Safe gd bd ids args mem sh fl ∧ dot.DRF gd bd ids args mem sh fl   (part of every contract)"><span class="m"><span class="auto">No data race (two threads touch a cell only if both read it or both add to it atomically); barriers are uniform; every loop terminates; no <code>int</code> operation overflows or divides by zero; every shared-memory access is in bounds. Every <code>int</code> parameter and cell is assumed to hold a 32-bit value, as its type says.</span></span></div>
+    </div>
+    <details><summary>Lean</summary><pre>/-- Dot product in one pass: each block multiplies its `blockDim` pairs, reduces them in shared
+memory, and adds its partial sum to `out[0]` with `atomicAdd`, so the blocks&#39; contributions
+land in any order. Products of at most 24 bits keep every block&#39;s partial sums in `int`; the
+atomic adds wrap around, so the final sum must fit too. -/
+contract dot (out : int*) (x : int*) (y : int*) (n : int) where
+  requires blockDim ≤ 256
+  requires ∃ p : Nat, blockDim = 2 ^ p
+  requires n ≤ gridDim * blockDim
+  requires gridDim * blockDim ≤ 2^31
+  requires -2^23 ≤ x[i] * y[i] ∧ x[i] * y[i] &lt; 2^23  when 0 ≤ i &lt; n
+  requires int32 (out[0] &#43; sum i &lt; n, x[i] * y[i])
+  ensures  out[0] = old(out[0]) &#43; sum i &lt; n, x[i] * y[i]
+  ensures  ∀ (i : Int), i ≠ 0 → out[i] = old(out[i])
+  unchanged x
+  unchanged y</pre></details>
+  </article>
+</div>
+</section><section class="ex">
+<div class="exhead"><a href="publish.html"><code>publish</code></a> <span class="meta">two warps communicate through a release/acquire flag, no barrier; proved from the PTX axioms</span></div>
+<div class="grid">
+  <div class="code"><div class="ln"><span class="n">1</span><span><span class="kw">__global__</span> <span class="kw">void</span> publish(<span class="kw">int</span>* out, <span class="kw">int</span>* data, <span class="kw">int</span>* flag, <span class="kw">int</span>* src) {</span></div><div class="ln"><span class="n">2</span><span>  <span class="kw">int</span> lane = <span class="bi">threadIdx.x</span> % <span class="nu">32</span>;</span></div><div class="ln"><span class="n">3</span><span>  <span class="kw">if</span> (<span class="bi">threadIdx.x</span> &lt; <span class="nu">32</span>) {</span></div><div class="ln"><span class="n">4</span><span>    data[lane] = src[lane];</span></div><div class="ln"><span class="n">5</span><span>    cuda::atomic_ref&lt;<span class="kw">int</span>, cuda::thread_scope_block&gt; f(flag[lane]);</span></div><div class="ln"><span class="n">6</span><span>    f.store(<span class="nu">1</span>, cuda::memory_order_release);</span></div><div class="ln"><span class="n">7</span><span>  } <span class="kw">else</span> {</span></div><div class="ln"><span class="n">8</span><span>    cuda::atomic_ref&lt;<span class="kw">int</span>, cuda::thread_scope_block&gt; f(flag[lane]);</span></div><div class="ln"><span class="n">9</span><span>    <span class="kw">while</span> (f.load(cuda::memory_order_acquire) == <span class="nu">0</span>) {}</span></div><div class="ln"><span class="n">10</span><span>    out[lane] = data[lane];</span></div><div class="ln"><span class="n">11</span><span>  }</span></div><div class="ln"><span class="n">12</span><span>}</span></div></div>
+  <article class="card">
+    <div class="head"><span class="sig"><span class="k">publish</span>(<span class="ty">int*</span> <var>out</var>, <span class="ty">int*</span> <var>data</var>, <span class="ty">int*</span> <var>flag</var>, <span class="ty">int*</span> <var>src</var>) <span class="launch">1-D launch · PTX machine</span></span><span class="pill proved">✓ proved</span></div>
+    <div class="rows">
+      <div class="chk row" title="Lean: gridDim = 1"><span class="lab">Requires</span><span class="m"><span class="b">gridDim</span> = 1</span></div>
+      <div class="chk row" title="Lean: blockDim = 64"><span class="lab">Requires</span><span class="m"><span class="b">blockDim</span> = 64</span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; 32 → flag[i] = 0"><span class="lab">Requires</span><span class="m"><var>flag</var>[<var>i</var>] = 0</span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; 32</span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; 32 → out[i] = src[i]"><span class="lab">Ensures</span><span class="m"><var>out</var>[<var>i</var>] = <var>src</var>[<var>i</var>]</span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; 32</span></div>
+      <div class="chk row" title="Lean: ∀ i, (i &lt; 0 ∨ 32 ≤ i) → out[i] = old(out[i])"><span class="lab">Ensures</span><span class="m"><var>out</var>[<var>i</var>] <span class="word">unchanged</span></span><span class="m cond"><span class="word">for every other</span> <var>i</var></span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; 32 → data[i] = src[i]"><span class="lab">Ensures</span><span class="m"><var>data</var>[<var>i</var>] = <var>src</var>[<var>i</var>]</span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; 32</span></div>
+      <div class="chk row" title="Lean: ∀ i, (i &lt; 0 ∨ 32 ≤ i) → data[i] = old(data[i])"><span class="lab">Ensures</span><span class="m"><var>data</var>[<var>i</var>] <span class="word">unchanged</span></span><span class="m cond"><span class="word">for every other</span> <var>i</var></span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; 32 → flag[i] = 1"><span class="lab">Ensures</span><span class="m"><var>flag</var>[<var>i</var>] = 1</span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; 32</span></div>
+      <div class="chk row" title="Lean: ∀ i, (i &lt; 0 ∨ 32 ≤ i) → flag[i] = old(flag[i])"><span class="lab">Ensures</span><span class="m"><var>flag</var>[<var>i</var>] <span class="word">unchanged</span></span><span class="m cond"><span class="word">for every other</span> <var>i</var></span></div>
+      <div class="chk row" title="Lean: ∀ i, src[i] = old(src[i])"><span class="lab">Ensures</span><span class="m"><var>src</var> <span class="word">unchanged</span></span></div>
+      <div class="chk row" title="Lean: Typed args mem sh → … → publish.Phys gd bd ids args mem sh fl (fun m fm =&gt; …)   (PhysContract)"><span class="m"><span class="auto">Proved on the PTX machine (the memory consistency model of the PTX ISA, <code>Gellar/Machine/</code>): every consistent, data-race-free execution of the launch ends in a memory meeting the clauses above, and such an execution exists. The kernel synchronises its threads itself, through <code>cuda::atomic_ref</code>, so the lockstep model's race check does not apply. Every <code>int</code> parameter and cell is assumed to hold a 32-bit value, as its type says.</span></span></div>
+    </div>
+    <details><summary>Lean</summary><pre>/-- One-shot publication between two warps of one block, lane to lane, through a release/acquire
+flag and no `__syncthreads`: the primitive of warp specialisation. Each lane of warp 0 writes
+its cell of `data` and then sets its flag with a `cuda::atomic_ref` store at block scope and
+release order; the same lane of warp 1 spins on the flag with acquire loads and, once it sees
+it set, copies the cell to `out`. The lockstep model cannot run this kernel (a thread reads a
+flag another thread sets inside the one phase), so the contract is about the PTX machine: the
+acquire load that ends the spin reads the release store, which synchronizes the two lanes, and
+the Causality axiom then makes the consumer&#39;s load of `data` read the producer&#39;s store. -/
+contract publish (out : int*) (data : int*) (flag : int*) (src : int*) where
+  physical
+  requires gridDim = 1
+  requires blockDim = 64
+  requires flag[i] = 0  when 0 ≤ i &lt; 32
+  ensures  out[i] = src[i]  when 0 ≤ i &lt; 32
+  ensures  out[i] = old(out[i])  otherwise
+  ensures  data[i] = src[i]  when 0 ≤ i &lt; 32
+  ensures  data[i] = old(data[i])  otherwise
+  ensures  flag[i] = 1  when 0 ≤ i &lt; 32
+  ensures  flag[i] = old(flag[i])  otherwise
+  unchanged src</pre></details>
+  </article>
+</div>
+</section>
+
+<div class="prose">
+<p>A contract is a theorem about every execution the PTX memory model admits; race freedom is proved, not assumed. Barrier-synchronized kernels are proved in a lockstep model that is proved sound and complete for the PTX machine; kernels whose threads communicate are proved directly from the PTX axioms, or in Iris on an interleaving machine justified against it. No <code>sorry</code>; axioms <code>propext</code>, <code>Classical.choice</code>, <code>Quot.sound</code>.</p>
+<p>Not covered: shuffles in the machine-to-interleaving direction; release/acquire kernels in Iris beyond their sequentially consistent runs; Iris rules for barriers; floating-point rounding; termination of spins.</p>
+</div>
+
+<h2 style="margin-top:34px">Kernels</h2>
+<table class="suite"><tr><th>Kernel</th><th>What it does</th><th>Contract</th></tr>
+<tr><td><a href="block_reverse.html"><code>block_reverse</code></a></td><td>Reverses each block&#39;s segment of <code>src</code> into <code>out</code> through shared memory: cell <code>t</code> of block <code>b</code> receives cell <code>blockDim − 1 − t</code> of the same block.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="block_sum.html"><code>block_sum</code></a></td><td>Tree reduction in shared memory: each block sums its <code>blockDim</code> cells of <code>src</code> into <code>out[blockIdx]</code>, halving the number of active threads at every barrier. Every partial sum is a sum of at most 256 cells, so cells of at most 24 bits keep the sums in <code>int</code>.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="copy.html"><code>copy</code></a></td><td>Copies the first <code>n</code> cells of <code>src</code> to <code>out</code>.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="dot.html"><code>dot</code></a></td><td>Dot product in one pass: each block multiplies its <code>blockDim</code> pairs, reduces them in shared memory, and adds its partial sum to <code>out[0]</code> with <code>atomicAdd</code>, so the blocks&#39; contributions land in any order. Products of at most 24 bits keep every block&#39;s partial sums in <code>int</code>; the atomic adds wrap around, so the final sum must fit too.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="fill.html"><code>fill</code></a></td><td>Fills the first <code>n</code> cells of <code>out</code> with even numbers. The thread&#39;s index and <code>2 * i</code> are computed in <code>int</code>, so the launch and <code>n</code> are bounded.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="gather.html"><code>gather</code></a></td><td><code>out[i] = src[idx[i]]</code> on the first <code>n</code> cells: a data-dependent read.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="gridstride.html"><code>gridstride</code></a></td><td>Writes <code>2 * i</code> into every cell <code>i</code> below <code>n</code>, however few threads are launched: each thread strides through the array. The stride, the last index a thread steps to past <code>n</code>, and <code>2 * i</code> are computed in <code>int</code>.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="histogram.html"><code>histogram</code></a></td><td>Counts, for every bin <code>v</code>, how many of the first <code>n</code> values of <code>src</code> equal <code>v</code>; values outside <code>[0, bins)</code> are ignored. Threads that hit the same bin add to it with <code>atomicAdd</code>, in whatever order the hardware runs them; the counters must not wrap around.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="matmul_naive.html"><code>matmul_naive</code></a></td><td><code>C ← A·B</code> for an <code>n × m</code> matrix <code>A</code> and an <code>m × p</code> matrix <code>B</code>, all row-major; one thread of a two-dimensional launch per element of <code>C</code>, each running the inner product as a loop in <code>int</code>: the coordinates, the linear indices, every product and every partial sum must fit.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="matmul_tiled.html"><code>matmul_tiled</code></a></td><td>Tiled matrix multiply, <code>C ← A·B</code> for square <code>n × n</code> matrices with <code>n</code> a multiple of 16: a <code>16 × 16</code> block computes one tile of <code>C</code>, walking the <code>n / 16</code> tiles of its row of <code>A</code> and its column of <code>B</code> through shared memory, with one barrier after loading a pair of tiles and one after using them. The indices, every product and every partial sum of a row by a column are computed in <code>int</code> and must fit.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="matvec.html"><code>matvec</code></a></td><td><code>y ← A·x</code> for an <code>n × m</code> matrix <code>A</code> stored row-major; one thread per row. The row&#39;s dot product is accumulated left to right in <code>int</code>: every product and every partial sum must fit.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="normalize_f.html"><code>normalize_f</code></a></td><td>Divides the first <code>n</code> cells of <code>x</code> by <code>n</code>, converted to float as C does; the clause speaks of the exact quotient.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="publish.html"><code>publish</code></a></td><td>One-shot publication between two warps of one block, lane to lane, through a release/acquire flag and no <code>__syncthreads</code>: the primitive of warp specialisation. Each lane of warp 0 writes its cell of <code>data</code> and then sets its flag with a <code>cuda::atomic_ref</code> store at block scope and release order; the same lane of warp 1 spins on the flag with acquire loads and, once it sees it set, copies the cell to <code>out</code>. The lockstep model cannot run this kernel (a thread reads a flag another thread sets inside the one phase), so the contract is about the PTX machine: the acquire load that ends the spin reads the release store, which synchronizes the two lanes, and the Causality axiom then makes the consumer&#39;s load of <code>data</code> read the producer&#39;s store.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="relu.html"><code>relu</code></a></td><td><code>out[i] = max(src[i], 0)</code> on the first <code>n</code> cells, written with a branch.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="reverse.html"><code>reverse</code></a></td><td>Reverses the first <code>n</code> cells of <code>src</code> into <code>out</code>.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="saxpy.html"><code>saxpy</code></a></td><td><code>y ← a·x + y</code> on the first <code>n</code> cells. Both the product and the sum must fit in an <code>int</code>.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="saxpy_f.html"><code>saxpy_f</code></a></td><td><code>y ← a·x + y</code> on the first <code>n</code> cells, in single precision. The clauses speak of the exact values the floats represent: this is the algorithm, stated with no rounding.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="scale.html"><code>scale</code></a></td><td>Scales the first <code>n</code> cells of <code>x</code> by <code>a</code> in place. The products must fit in an <code>int</code>.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="scan.html"><code>scan</code></a></td><td>Inclusive prefix sum of each block&#39;s <code>blockDim</code> cells (Hillis–Steele in shared memory): <code>out[i]</code> is the sum of the block&#39;s cells up to and including <code>i</code>. Every partial sum is a sum of at most 256 cells, so cells of at most 24 bits keep the sums in <code>int</code>.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="scatter.html"><code>scatter</code></a></td><td><code>out[idx[i]] = src[i]</code> on the first <code>n</code> cells: a data-dependent write, race-free because the targets are distinct.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="select.html"><code>select</code></a></td><td><code>out[i]</code> is <code>a[i]</code> where <code>mask[i]</code> is set and <code>b[i]</code> elsewhere, on the first <code>n</code> cells.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="shift.html"><code>shift</code></a></td><td>Copies the first <code>n</code> cells of <code>src</code> to <code>out</code>, shifted by <code>off</code>. The shifted indices must fit in an <code>int</code>.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="smooth_f.html"><code>smooth_f</code></a></td><td>A three-point smoothing of <code>x</code> into <code>out</code>: every interior cell becomes half itself plus a quarter of each neighbour, exactly. The constants are the float literals <code>0.5f</code>, <code>0.25f</code>, whose exact values are what the clause says. The guard computes <code>n - 1</code> in <code>int</code>, so <code>n</code> must not be <code>INT_MIN</code>.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="stencil.html"><code>stencil</code></a></td><td>A three-point stencil, one block at a time through shared memory: every interior cell of a block becomes the sum of itself and its two neighbours; the two edge cells of each block are left alone. The sum is formed left to right in <code>int</code>, so both partial sums must fit.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="sum_f.html"><code>sum_f</code></a></td><td>Adds the first <code>n</code> cells of <code>x</code> into <code>out[0]</code> with <code>atomicAdd</code>, in whatever order the hardware runs the threads. The exact value of <code>out[0]</code> is the exact sum; its rounded bits depend on the order and are not constrained.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="transpose.html"><code>transpose</code></a></td><td>Tiled transpose: each <code>16 × 16</code> block stages its tile of the <code>rows × cols</code> matrix <code>src</code> in shared memory, synchronises, and writes the tile transposed into the <code>cols × rows</code> matrix <code>out</code>, so that both the reads and the writes of global memory run along rows.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="transpose_naive.html"><code>transpose_naive</code></a></td><td>Transposes the <code>rows × cols</code> row-major matrix <code>src</code> into the <code>cols × rows</code> matrix <code>out</code>, one element per thread of a two-dimensional launch. The coordinates and the linear indices are computed in <code>int</code>.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="vadd.html"><code>vadd</code></a></td><td><code>c ← a + b</code> on the first <code>n</code> cells. The sums must fit in an <code>int</code>.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr><tr><td><a href="warp_sum.html"><code>warp_sum</code></a></td><td>Warp reduction: one warp per block, each lane loads one cell (zero past <code>n</code>), and five <code>__shfl_down_sync</code> rounds fold the warp&#39;s values into lane 0, which writes the block&#39;s sum. No shared memory and no barrier: the exchange is between registers. Every lane&#39;s running sum is a sum of at most 32 loaded values (a lane past the warp&#39;s edge adds its own value again), so loaded values of at most 26 bits keep the sums in <code>int</code>.</td><td>
+  <span class="pill proved">✓ proved</span>
+</td></tr>
+</table>
+</main></body></html>

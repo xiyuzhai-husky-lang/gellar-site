@@ -108,29 +108,122 @@ table.suite td, table.suite th { vertical-align: top; }
 table.suite td:last-child { white-space: nowrap; }
 .pill { white-space: nowrap; }
 footer { color: var(--muted); font-size: 13px; margin-top: 40px; }
+.ex { margin: 14px 0 26px; }
+.exhead { margin-bottom: 8px; }
+.ex .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 </style></head>
 <body><main>
-<header><h1>gellar</h1><div class="meta">the GPU as a physical machine, in Lean · <a href="index.html">kernel contracts</a></div></header>
+<header><h1>gellar</h1><div class="meta">CUDA kernels proved correct in Lean, against the PTX memory consistency model · <a href="index.html">all kernels</a></div></header>
+
+<section class="ex">
+<div class="exhead"><a href="vadd.html"><code>vadd</code></a> <span class="meta"></span></div>
+<div class="grid">
+  <div class="code"><div class="ln"><span class="n">1</span><span><span class="kw">__global__</span> <span class="kw">void</span> vadd(<span class="kw">int</span>* c, <span class="kw">int</span>* a, <span class="kw">int</span>* b, <span class="kw">int</span> n) {</span></div><div class="ln"><span class="n">2</span><span>  <span class="kw">int</span> i = <span class="bi">blockIdx.x</span> * <span class="bi">blockDim.x</span> + <span class="bi">threadIdx.x</span>;</span></div><div class="ln"><span class="n">3</span><span>  <span class="kw">if</span> (i &lt; n) c[i] = a[i] + b[i];</span></div><div class="ln"><span class="n">4</span><span>}</span></div></div>
+  <article class="card">
+    <div class="head"><span class="sig"><span class="k">vadd</span>(<span class="ty">int*</span> <var>c</var>, <span class="ty">int*</span> <var>a</var>, <span class="ty">int*</span> <var>b</var>, <span class="ty">int</span> <var>n</var>) <span class="launch">1-D launch</span></span><span class="pill proved">✓ proved</span></div>
+    <div class="rows">
+      <div class="chk row" title="Lean: n ≤ gridDim * blockDim"><span class="lab">Requires</span><span class="m"><var>n</var> ≤ <span class="b">gridDim</span> · <span class="b">blockDim</span></span></div>
+      <div class="chk row" title="Lean: gridDim * blockDim ≤ 2^31"><span class="lab">Requires</span><span class="m"><span class="b">gridDim</span> · <span class="b">blockDim</span> ≤ 2<sup>31</sup></span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; n → int32 (a[i] &#43; b[i])"><span class="lab">Requires</span><span class="m">−2<sup>31</sup> ≤ <var>a</var>[<var>i</var>] + <var>b</var>[<var>i</var>] &lt; 2<sup>31</sup></span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; <var>n</var></span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; n → c[i] = a[i] &#43; b[i]"><span class="lab">Ensures</span><span class="m"><var>c</var>[<var>i</var>] = <var>a</var>[<var>i</var>] + <var>b</var>[<var>i</var>]</span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; <var>n</var></span></div>
+      <div class="chk row" title="Lean: ∀ i, (i &lt; 0 ∨ n ≤ i) → c[i] = old(c[i])"><span class="lab">Ensures</span><span class="m"><var>c</var>[<var>i</var>] <span class="word">unchanged</span></span><span class="m cond"><span class="word">for every other</span> <var>i</var></span></div>
+      <div class="chk row" title="Lean: ∀ i, a[i] = old(a[i])"><span class="lab">Ensures</span><span class="m"><var>a</var> <span class="word">unchanged</span></span></div>
+      <div class="chk row" title="Lean: ∀ i, b[i] = old(b[i])"><span class="lab">Ensures</span><span class="m"><var>b</var> <span class="word">unchanged</span></span></div>
+      <div class="chk row" title="Lean: Typed args mem sh → … → vadd.Safe gd bd ids args mem sh fl ∧ vadd.DRF gd bd ids args mem sh fl   (part of every contract)"><span class="m"><span class="auto">No data race (two threads touch a cell only if both read it or both add to it atomically); barriers are uniform; every loop terminates; no <code>int</code> operation overflows or divides by zero; every shared-memory access is in bounds. Every <code>int</code> parameter and cell is assumed to hold a 32-bit value, as its type says.</span></span></div>
+    </div>
+    <details><summary>Lean</summary><pre>/-- `c ← a &#43; b` on the first `n` cells. The sums must fit in an `int`. -/
+contract vadd (c : int*) (a : int*) (b : int*) (n : int) where
+  requires n ≤ gridDim * blockDim
+  requires gridDim * blockDim ≤ 2^31
+  requires int32 (a[i] &#43; b[i])  when 0 ≤ i &lt; n
+  ensures  c[i] = a[i] &#43; b[i]   when 0 ≤ i &lt; n
+  ensures  c[i] = old(c[i])     otherwise
+  unchanged a
+  unchanged b</pre></details>
+  </article>
+</div>
+</section><section class="ex">
+<div class="exhead"><a href="dot.html"><code>dot</code></a> <span class="meta">shared-memory reduction across barriers in a loop, then atomicAdd across blocks</span></div>
+<div class="grid">
+  <div class="code"><div class="ln"><span class="n">1</span><span><span class="kw">__global__</span> <span class="kw">void</span> dot(<span class="kw">int</span>* out, <span class="kw">int</span>* x, <span class="kw">int</span>* y, <span class="kw">int</span> n) {</span></div><div class="ln"><span class="n">2</span><span>  <span class="kw">__shared__</span> <span class="kw">int</span> s[<span class="nu">256</span>];</span></div><div class="ln"><span class="n">3</span><span>  <span class="kw">int</span> tid = <span class="bi">threadIdx.x</span>;</span></div><div class="ln"><span class="n">4</span><span>  <span class="kw">int</span> i = <span class="bi">blockIdx.x</span> * <span class="bi">blockDim.x</span> + tid;</span></div><div class="ln"><span class="n">5</span><span>  <span class="kw">if</span> (i &lt; n) s[tid] = x[i] * y[i]; <span class="kw">else</span> s[tid] = <span class="nu">0</span>;</span></div><div class="ln"><span class="n">6</span><span>  <span class="bi">__syncthreads</span>();</span></div><div class="ln"><span class="n">7</span><span>  <span class="kw">for</span> (<span class="kw">int</span> d = <span class="bi">blockDim.x</span> / <span class="nu">2</span>; d &gt; <span class="nu">0</span>; d /= <span class="nu">2</span>) {</span></div><div class="ln"><span class="n">8</span><span>    <span class="kw">if</span> (tid &lt; d) s[tid] += s[tid + d];</span></div><div class="ln"><span class="n">9</span><span>    <span class="bi">__syncthreads</span>();</span></div><div class="ln"><span class="n">10</span><span>  }</span></div><div class="ln"><span class="n">11</span><span>  <span class="kw">if</span> (tid == <span class="nu">0</span>) <span class="bi">atomicAdd</span>(&amp;out[<span class="nu">0</span>], s[<span class="nu">0</span>]);</span></div><div class="ln"><span class="n">12</span><span>}</span></div></div>
+  <article class="card">
+    <div class="head"><span class="sig"><span class="k">dot</span>(<span class="ty">int*</span> <var>out</var>, <span class="ty">int*</span> <var>x</var>, <span class="ty">int*</span> <var>y</var>, <span class="ty">int</span> <var>n</var>) <span class="launch">1-D launch</span></span><span class="pill proved">✓ proved</span></div>
+    <div class="rows">
+      <div class="chk row" title="Lean: blockDim ≤ 256"><span class="lab">Requires</span><span class="m"><span class="b">blockDim</span> ≤ 256</span></div>
+      <div class="chk row" title="Lean: ∃ p : Nat, blockDim = 2 ^ p"><span class="lab">Requires</span><span class="m">∃ <var>p</var>, <span class="b">blockDim</span> = 2<sup>p</sup></span></div>
+      <div class="chk row" title="Lean: n ≤ gridDim * blockDim"><span class="lab">Requires</span><span class="m"><var>n</var> ≤ <span class="b">gridDim</span> · <span class="b">blockDim</span></span></div>
+      <div class="chk row" title="Lean: gridDim * blockDim ≤ 2^31"><span class="lab">Requires</span><span class="m"><span class="b">gridDim</span> · <span class="b">blockDim</span> ≤ 2<sup>31</sup></span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; n → -2^23 ≤ x[i] * y[i] ∧ x[i] * y[i] &lt; 2^23"><span class="lab">Requires</span><span class="m">− 2<sup>23</sup> ≤ <var>x</var>[<var>i</var>] · <var>y</var>[<var>i</var>] ∧ <var>x</var>[<var>i</var>] · <var>y</var>[<var>i</var>] &lt; 2<sup>23</sup></span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; <var>n</var></span></div>
+      <div class="chk row" title="Lean: int32 (out[0] &#43; sum i &lt; n, x[i] * y[i])"><span class="lab">Requires</span><span class="m">−2<sup>31</sup> ≤ <var>out</var>[0] + <span class="sum">Σ<sub><var>i</var> &lt; <var>n</var></sub></span><var>x</var>[<var>i</var>] · <var>y</var>[<var>i</var>] &lt; 2<sup>31</sup></span></div>
+      <div class="chk row" title="Lean: out[0] = old(out[0]) &#43; sum i &lt; n, x[i] * y[i]"><span class="lab">Ensures</span><span class="m"><var>out</var>[0] = <span class="word">old</span>(<var>out</var>[0]) + <span class="sum">Σ<sub><var>i</var> &lt; <var>n</var></sub></span><var>x</var>[<var>i</var>] · <var>y</var>[<var>i</var>]</span></div>
+      <div class="chk row" title="Lean: ∀ (i : Int), i ≠ 0 → out[i] = old(out[i])"><span class="lab">Ensures</span><span class="m">∀ <var>i</var>, <var>i</var> ≠ 0 ⇒ <var>out</var>[<var>i</var>] = <span class="word">old</span>(<var>out</var>[<var>i</var>])</span></div>
+      <div class="chk row" title="Lean: ∀ i, x[i] = old(x[i])"><span class="lab">Ensures</span><span class="m"><var>x</var> <span class="word">unchanged</span></span></div>
+      <div class="chk row" title="Lean: ∀ i, y[i] = old(y[i])"><span class="lab">Ensures</span><span class="m"><var>y</var> <span class="word">unchanged</span></span></div>
+      <div class="chk row" title="Lean: Typed args mem sh → … → dot.Safe gd bd ids args mem sh fl ∧ dot.DRF gd bd ids args mem sh fl   (part of every contract)"><span class="m"><span class="auto">No data race (two threads touch a cell only if both read it or both add to it atomically); barriers are uniform; every loop terminates; no <code>int</code> operation overflows or divides by zero; every shared-memory access is in bounds. Every <code>int</code> parameter and cell is assumed to hold a 32-bit value, as its type says.</span></span></div>
+    </div>
+    <details><summary>Lean</summary><pre>/-- Dot product in one pass: each block multiplies its `blockDim` pairs, reduces them in shared
+memory, and adds its partial sum to `out[0]` with `atomicAdd`, so the blocks&#39; contributions
+land in any order. Products of at most 24 bits keep every block&#39;s partial sums in `int`; the
+atomic adds wrap around, so the final sum must fit too. -/
+contract dot (out : int*) (x : int*) (y : int*) (n : int) where
+  requires blockDim ≤ 256
+  requires ∃ p : Nat, blockDim = 2 ^ p
+  requires n ≤ gridDim * blockDim
+  requires gridDim * blockDim ≤ 2^31
+  requires -2^23 ≤ x[i] * y[i] ∧ x[i] * y[i] &lt; 2^23  when 0 ≤ i &lt; n
+  requires int32 (out[0] &#43; sum i &lt; n, x[i] * y[i])
+  ensures  out[0] = old(out[0]) &#43; sum i &lt; n, x[i] * y[i]
+  ensures  ∀ (i : Int), i ≠ 0 → out[i] = old(out[i])
+  unchanged x
+  unchanged y</pre></details>
+  </article>
+</div>
+</section><section class="ex">
+<div class="exhead"><a href="publish.html"><code>publish</code></a> <span class="meta">two warps communicate through a release/acquire flag, no barrier; proved from the PTX axioms</span></div>
+<div class="grid">
+  <div class="code"><div class="ln"><span class="n">1</span><span><span class="kw">__global__</span> <span class="kw">void</span> publish(<span class="kw">int</span>* out, <span class="kw">int</span>* data, <span class="kw">int</span>* flag, <span class="kw">int</span>* src) {</span></div><div class="ln"><span class="n">2</span><span>  <span class="kw">int</span> lane = <span class="bi">threadIdx.x</span> % <span class="nu">32</span>;</span></div><div class="ln"><span class="n">3</span><span>  <span class="kw">if</span> (<span class="bi">threadIdx.x</span> &lt; <span class="nu">32</span>) {</span></div><div class="ln"><span class="n">4</span><span>    data[lane] = src[lane];</span></div><div class="ln"><span class="n">5</span><span>    cuda::atomic_ref&lt;<span class="kw">int</span>, cuda::thread_scope_block&gt; f(flag[lane]);</span></div><div class="ln"><span class="n">6</span><span>    f.store(<span class="nu">1</span>, cuda::memory_order_release);</span></div><div class="ln"><span class="n">7</span><span>  } <span class="kw">else</span> {</span></div><div class="ln"><span class="n">8</span><span>    cuda::atomic_ref&lt;<span class="kw">int</span>, cuda::thread_scope_block&gt; f(flag[lane]);</span></div><div class="ln"><span class="n">9</span><span>    <span class="kw">while</span> (f.load(cuda::memory_order_acquire) == <span class="nu">0</span>) {}</span></div><div class="ln"><span class="n">10</span><span>    out[lane] = data[lane];</span></div><div class="ln"><span class="n">11</span><span>  }</span></div><div class="ln"><span class="n">12</span><span>}</span></div></div>
+  <article class="card">
+    <div class="head"><span class="sig"><span class="k">publish</span>(<span class="ty">int*</span> <var>out</var>, <span class="ty">int*</span> <var>data</var>, <span class="ty">int*</span> <var>flag</var>, <span class="ty">int*</span> <var>src</var>) <span class="launch">1-D launch · PTX machine</span></span><span class="pill proved">✓ proved</span></div>
+    <div class="rows">
+      <div class="chk row" title="Lean: gridDim = 1"><span class="lab">Requires</span><span class="m"><span class="b">gridDim</span> = 1</span></div>
+      <div class="chk row" title="Lean: blockDim = 64"><span class="lab">Requires</span><span class="m"><span class="b">blockDim</span> = 64</span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; 32 → flag[i] = 0"><span class="lab">Requires</span><span class="m"><var>flag</var>[<var>i</var>] = 0</span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; 32</span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; 32 → out[i] = src[i]"><span class="lab">Ensures</span><span class="m"><var>out</var>[<var>i</var>] = <var>src</var>[<var>i</var>]</span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; 32</span></div>
+      <div class="chk row" title="Lean: ∀ i, (i &lt; 0 ∨ 32 ≤ i) → out[i] = old(out[i])"><span class="lab">Ensures</span><span class="m"><var>out</var>[<var>i</var>] <span class="word">unchanged</span></span><span class="m cond"><span class="word">for every other</span> <var>i</var></span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; 32 → data[i] = src[i]"><span class="lab">Ensures</span><span class="m"><var>data</var>[<var>i</var>] = <var>src</var>[<var>i</var>]</span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; 32</span></div>
+      <div class="chk row" title="Lean: ∀ i, (i &lt; 0 ∨ 32 ≤ i) → data[i] = old(data[i])"><span class="lab">Ensures</span><span class="m"><var>data</var>[<var>i</var>] <span class="word">unchanged</span></span><span class="m cond"><span class="word">for every other</span> <var>i</var></span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; 32 → flag[i] = 1"><span class="lab">Ensures</span><span class="m"><var>flag</var>[<var>i</var>] = 1</span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; 32</span></div>
+      <div class="chk row" title="Lean: ∀ i, (i &lt; 0 ∨ 32 ≤ i) → flag[i] = old(flag[i])"><span class="lab">Ensures</span><span class="m"><var>flag</var>[<var>i</var>] <span class="word">unchanged</span></span><span class="m cond"><span class="word">for every other</span> <var>i</var></span></div>
+      <div class="chk row" title="Lean: ∀ i, src[i] = old(src[i])"><span class="lab">Ensures</span><span class="m"><var>src</var> <span class="word">unchanged</span></span></div>
+      <div class="chk row" title="Lean: Typed args mem sh → … → publish.Phys gd bd ids args mem sh fl (fun m fm =&gt; …)   (PhysContract)"><span class="m"><span class="auto">Proved on the PTX machine (the memory consistency model of the PTX ISA, <code>Gellar/Machine/</code>): every consistent, data-race-free execution of the launch ends in a memory meeting the clauses above, and such an execution exists. The kernel synchronises its threads itself, through <code>cuda::atomic_ref</code>, so the lockstep model's race check does not apply. Every <code>int</code> parameter and cell is assumed to hold a 32-bit value, as its type says.</span></span></div>
+    </div>
+    <details><summary>Lean</summary><pre>/-- One-shot publication between two warps of one block, lane to lane, through a release/acquire
+flag and no `__syncthreads`: the primitive of warp specialisation. Each lane of warp 0 writes
+its cell of `data` and then sets its flag with a `cuda::atomic_ref` store at block scope and
+release order; the same lane of warp 1 spins on the flag with acquire loads and, once it sees
+it set, copies the cell to `out`. The lockstep model cannot run this kernel (a thread reads a
+flag another thread sets inside the one phase), so the contract is about the PTX machine: the
+acquire load that ends the spin reads the release store, which synchronizes the two lanes, and
+the Causality axiom then makes the consumer&#39;s load of `data` read the producer&#39;s store. -/
+contract publish (out : int*) (data : int*) (flag : int*) (src : int*) where
+  physical
+  requires gridDim = 1
+  requires blockDim = 64
+  requires flag[i] = 0  when 0 ≤ i &lt; 32
+  ensures  out[i] = src[i]  when 0 ≤ i &lt; 32
+  ensures  out[i] = old(out[i])  otherwise
+  ensures  data[i] = src[i]  when 0 ≤ i &lt; 32
+  ensures  data[i] = old(data[i])  otherwise
+  ensures  flag[i] = 1  when 0 ≤ i &lt; 32
+  ensures  flag[i] = old(flag[i])  otherwise
+  unchanged src</pre></details>
+  </article>
+</div>
+</section>
 
 <div class="prose">
-<p>The ground truth is the PTX memory consistency model, transcribed from the ISA axiom by axiom. A CUDA kernel is written as nvcc compiles it, translated to Lean, and its contract is proved about every execution the model admits.</p>
-
-<h2>Proved</h2>
-<ul class="limits">
-<li>Every kernel below has its contract proved about all executions the PTX memory model allows.</li>
-<li>The lockstep model, in which barrier-synchronized kernels are proved, is sound and complete against the PTX machine: a kernel it accepts behaves on the machine exactly as it says, and such behaviour exists.</li>
-<li>The interleaving machine, on which Iris proves kernels whose threads communicate, is justified against the PTX machine in both directions: its runs are behaviours of the machine, and the machine's executions are its runs for barrier-synchronized kernels.</li>
-<li>Warp-to-warp publication through a release/acquire flag is proved twice, directly from the PTX axioms and in Iris, and the two proofs are compared.</li>
-<li>Everything builds with no holes and only Lean's three standard axioms.</li>
-</ul>
-
-<h2>Not proved</h2>
-<ul class="limits">
-<li>The machine-to-interleaving direction does not cover shuffles, and covers release/acquire kernels only as far as their sequentially consistent runs; a view-based machine is the next step.</li>
-<li>Barriers and shuffles have no Iris rules yet.</li>
-<li>Floating-point rounding error is in no contract.</li>
-<li>Liveness: nothing says a spin terminates.</li>
-</ul>
+<p>A contract is a theorem about every execution the PTX memory model admits; race freedom is proved, not assumed. Barrier-synchronized kernels are proved in a lockstep model that is proved sound and complete for the PTX machine; kernels whose threads communicate are proved directly from the PTX axioms, or in Iris on an interleaving machine justified against it. No <code>sorry</code>; axioms <code>propext</code>, <code>Classical.choice</code>, <code>Quot.sound</code>.</p>
+<p>Not covered: shuffles in the machine-to-interleaving direction; release/acquire kernels in Iris beyond their sequentially consistent runs; Iris rules for barriers; floating-point rounding; termination of spins.</p>
 </div>
 
 <h2 style="margin-top:34px">Kernels</h2>
