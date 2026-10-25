@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>gellar</title><style>
+:root {
+  --bg: #fbfaf7; --panel: #ffffff; --ink: #1d1d1f; --muted: #6b6b70; --rule: #e6e3dc;
+  --code-bg: #f6f4ef; --hl: #fff1c2; --link: #fff7dc;
+  --kw: #8a3ffc; --bi: #0f6fb8; --nu: #b45309; --st: #15803d; --cm: #8b8b93;
+  --ok: #157f3b; --ok-bg: #e3f4e8; --ok-rule: #2f9e57; --ok-hover: #f1faf3;
+  --warn: #9a6100; --warn-bg: #fdf0d5; --bad: #b42318; --bad-bg: #fde4e1;
+  --idle: #5b5b63; --idle-bg: #ececef; --note-rule: #b9b8bd;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141416; --panel: #1b1b1e; --ink: #e8e6e1; --muted: #9a9aa2; --rule: #2c2c31;
+    --code-bg: #18181b; --hl: #3a3215; --link: #2a2614;
+    --kw: #c4a1ff; --bi: #6cb6ff; --nu: #f0a35e; --st: #6fd08c; --cm: #74747c;
+    --ok: #6fd08c; --ok-bg: #16301f; --ok-rule: #3f9e63; --ok-hover: #182a1e;
+    --warn: #f0c35e; --warn-bg: #352a12; --bad: #ff8a80; --bad-bg: #3a1714;
+    --idle: #b0b0b8; --idle-bg: #2a2a2f; --note-rule: #55555c;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1320px; margin: 0 auto; padding: 28px 16px 64px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px 20px; margin-bottom: 18px; }
+h1 { font: 600 22px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; margin: 0; }
+.meta { color: var(--muted); font-size: 13px; }
+.meta code { font-size: 12.5px; }
+.summary { display: flex; gap: 8px; margin-left: auto; }
+.grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px; align-items: start; }
+@media (max-width: 960px) { .grid { grid-template-columns: minmax(0, 1fr); } .summary { margin-left: 0; } }
+section h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+  font-weight: 600; margin: 0 0 8px; }
+.code { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 8px; overflow-x: auto;
+  font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 8px 0; }
+.code .ln { display: flex; padding: 0 14px 0 0; white-space: pre; }
+.code .ln .n { flex: none; width: 3.2em; text-align: right; padding-right: 14px; color: var(--muted);
+  user-select: none; }
+.code .ln.k .n { box-shadow: inset 2px 0 var(--bi); }
+.code .ln.on { background: var(--hl); }
+.code .ln.link { background: var(--link); }
+.kw { color: var(--kw); } .bi { color: var(--bi); } .nu { color: var(--nu); } .st { color: var(--st); }
+.cm { color: var(--cm); font-style: italic; }
+.sticky { position: sticky; top: 16px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--muted);
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 8px 12px; margin-bottom: 14px; }
+.cards { display: flex; flex-direction: column; gap: 14px; }
+.card { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 22px; }
+.card .head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
+.sig { font: 600 17px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.sig .k { color: var(--bi); } .sig .ty { color: var(--kw); font-weight: 500; } .sig var { font-style: normal; font-weight: 500; }
+.sig .launch { font: 500 12px system-ui, sans-serif; color: var(--muted); margin-left: 10px; }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; margin-left: auto; }
+.pill.proved { color: var(--ok); background: var(--ok-bg); }
+.pill.sorry { color: var(--warn); background: var(--warn-bg); }
+.pill.error, .pill.missing { color: var(--bad); background: var(--bad-bg); }
+.pill.unchecked { color: var(--idle); background: var(--idle-bg); }
+.m { font-family: "STIX Two Text", "Cambria Math", "Latin Modern Math", Georgia, serif; font-size: 17px; }
+.m var { font-style: italic; }
+.m .b { font-family: ui-monospace, Menlo, monospace; font-size: 14px; color: var(--bi); font-style: normal; }
+.m .sum { font-size: 19px; } .m .sum sub { font-size: 11px; font-family: "STIX Two Text", Georgia, serif; }
+.word { color: var(--muted); font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14px; }
+.auto { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14.5px; }
+.lab { display: inline-block; width: 84px; font-size: 11.5px; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--muted); font-weight: 600; }
+.tag { display: inline-block; font: 600 10.5px/1 ui-sans-serif, sans-serif; letter-spacing: .06em; text-transform: uppercase;
+  border-radius: 4px; padding: 3px 6px; vertical-align: 2px; white-space: nowrap; }
+.tag.c { color: var(--ok); background: var(--ok-bg); } .tag.n { color: var(--idle); background: var(--idle-bg); }
+.rows { display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.row .tag { margin-left: auto; }
+.row .cond { margin-left: auto; } .row .cond + .tag { margin-left: 0; }
+.chk { border-left: 3px solid var(--ok-rule); padding: 4px 0 4px 12px; cursor: help; }
+.chk:hover { background: var(--ok-hover); }
+.note { border-left: 3px dashed var(--note-rule); padding: 4px 0 4px 12px; color: var(--muted); font-style: italic; margin-bottom: 10px; }
+details { margin-top: 14px; font-size: 13px; color: var(--muted); }
+details summary { cursor: pointer; }
+details pre { font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code-bg);
+  border-radius: 6px; padding: 10px 12px; color: var(--ink); white-space: pre-wrap; margin: 8px 0 0; }
+.msgs { margin: 10px 0 0; padding: 8px 12px; border-radius: 6px; background: var(--bad-bg); color: var(--bad);
+  font: 12px/1.5 ui-monospace, monospace; white-space: pre-wrap; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em;
+  background: var(--code-bg); padding: 1px 4px; border-radius: 4px; }
+.gen { margin-top: 28px; }
+.empty { color: var(--muted); background: var(--panel); border: 1px dashed var(--rule); border-radius: 10px; padding: 16px; }
+table { border-collapse: collapse; width: 100%; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+td, th { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: baseline; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+tr:last-child td { border-bottom: none; }
+td .pill { margin-left: 0; }
+a { color: inherit; }
+
+.prose { max-width: 72ch; }
+.prose p { margin: 8px 0 12px; }
+.prose h2 { margin-top: 30px; }
+.prose li { margin: 6px 0; }
+nav.top { display: flex; gap: 18px; margin: 0 0 22px; font-size: 14px; }
+nav.top a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
+nav.top a.here { border-bottom: 2px solid var(--ink); }
+.four { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 10px 0 24px; }
+.four a.box { display: block; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; color: var(--ink); text-decoration: none; }
+.four a.box b { display: block; margin-bottom: 6px; }
+.ex { margin: 14px 0 26px; }
+.exhead { margin-bottom: 8px; }
+.ex .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+table.suite td, table.suite th { vertical-align: top; }
+table.suite td:last-child { white-space: nowrap; }
+.pill { white-space: nowrap; }
+</style></head>
+<body><main>
+<header><h1><a href="showcase.html" style="color:inherit;text-decoration:none">gellar</a></h1><div class="meta">CUDA kernels proved correct in Lean against the PTX memory consistency model</div></header>
+<nav class="top"><a href="foundation.html" class="here">Foundation</a><a href="coverage.html">Coverage</a><a href="kernels.html">Examples</a><a href="specs.html">Specs</a></nav>
+
+<div class="prose">
+<h2>Foundation</h2>
+<p>The foundation is a Lean formalization of a fragment of the PTX ISA memory consistency model (chapter 8): candidate executions with their events, the relations the ISA defines (morally strong, base causality order, observation, coherence, synchronizes-with through release/acquire patterns, barriers and <code>fence.sc</code>) and its axioms (Coherence, Fence-SC, Atomicity, No-Thin-Air, SC-per-location, Causality), each beside the ISA section it transcribes. A data race is the ISA's: a conflicting pair that is neither morally strong nor ordered by base causality order.</p>
+<p>The formalization is checked against a litmus corpus by decision procedure against Dartagnan's verdicts, with the differences documented at the tests (one GPU, single-event atomics, no liveness).</p>
+<p>Everything else is built on it and justified against it: the lockstep model in which barrier-synchronized kernels are proved, with its refinement theorem to the machine; the interleaving machine for kernels whose threads communicate, justified in both directions; and Iris, on iris-lean, as a proof method over the interleaving machine. Proofs are checked by Lean with its standard axioms only.</p>
+</div>
+</main></body></html>
