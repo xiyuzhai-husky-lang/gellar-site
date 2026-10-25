@@ -117,7 +117,7 @@ footer { color: var(--muted); font-size: 13px; margin-top: 40px; }
 
 <div class="prose">
 <h2>Foundation</h2>
-<p>The PTX ISA memory consistency model (chapter 8), transcribed axiom by axiom as constraints on candidate executions and checked against the litmus corpus by decision against Dartagnan's verdicts. Every contract is a theorem about every execution this model admits. The lockstep model (barrier-synchronized kernels) and the interleaving machine (communicating kernels, with Iris on it) are proved abstractions of it. Proofs use only Lean's standard axioms; no <code>sorry</code>.</p>
+<p>The PTX ISA memory consistency model (chapter 8), transcribed axiom by axiom and checked against the litmus corpus against Dartagnan's verdicts. Every contract is a theorem about every execution this model admits; the lockstep model and the interleaving machine are proved abstractions of it.</p>
 
 <h2>Coverage</h2>
 <p><strong>CUDA:</strong> <code>__global__</code> kernels with <code>int</code>/<code>float</code> scalars and arrays, <code>__shared__</code> arrays, 1-D and 2-D launches, <code>threadIdx</code>/<code>blockIdx</code>/<code>blockDim</code>/<code>gridDim</code>, integer and float arithmetic, <code>if</code>/<code>for</code>/<code>while</code>, <code>__syncthreads()</code>, <code>atomicAdd</code> on <code>int</code> and <code>float</code>, <code>__shfl_down_sync</code>, <code>cuda::atomic_ref</code> loads and stores with <code>memory_order</code> and <code>thread_scope</code>.</p>
