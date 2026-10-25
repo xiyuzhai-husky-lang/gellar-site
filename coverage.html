@@ -121,7 +121,8 @@ a { color: inherit; }
 .pane[hidden] { display: none; }
 .pane .col { flex: 0 0 auto; width: 640px; max-width: 42vw; min-width: 0; }
 .pane .col.proofcol { flex: 1 1 0; width: auto; max-width: none; }
-.desc { margin: 0 0 12px; font-size: 15px; line-height: 1.55; max-width: 72ch; }
+.desc { margin: 0 0 14px; font-size: 15px; line-height: 1.65; max-width: 80ch; padding: 12px 16px; background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--bi); border-radius: 8px; }
+.desc code { background: none; padding: 0; font-size: .92em; color: var(--bi); }
 .colhead { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 0 8px; }
 .code.proof { max-height: calc(100vh - 110px); overflow: auto; font-size: 14px; }
 @media (max-width: 1100px) { .pane { display: block; } .pane .col + .col { margin-top: 18px; } }
