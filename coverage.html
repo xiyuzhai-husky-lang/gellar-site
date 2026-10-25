@@ -98,7 +98,8 @@ a { color: inherit; }
 nav.top { display: flex; gap: 18px; margin: 0 0 22px; font-size: 14px; }
 nav.top a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
 nav.top a.here { border-bottom: 2px solid var(--ink); }
-.four { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 10px 0 24px; }
+.four { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 10px 0 24px; }
+@media (max-width: 760px) { .four { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .four a.box { display: block; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; color: var(--ink); text-decoration: none; }
 .four a.box b { display: block; margin-bottom: 6px; }
 .ex { margin: 14px 0 26px; }
