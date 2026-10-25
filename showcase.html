@@ -113,37 +113,65 @@ footer { color: var(--muted); font-size: 13px; margin-top: 40px; }
 .ex .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 </style></head>
 <body><main>
-<header><h1>gellar</h1><div class="meta">CUDA kernels proved correct in Lean, against the PTX memory consistency model · <a href="index.html">all kernels</a></div></header>
+<header><h1>gellar</h1><div class="meta">infrastructure for verifying AI infrastructure: CUDA kernels proved correct in Lean against the PTX memory consistency model · <a href="index.html">all kernels</a></div></header>
+
+<div class="prose">
+<h2>Foundation</h2>
+<p>The PTX ISA memory consistency model (chapter 8), transcribed axiom by axiom as constraints on candidate executions and checked against the litmus corpus by decision against Dartagnan's verdicts. Every contract is a theorem about every execution this model admits. The lockstep model (barrier-synchronized kernels) and the interleaving machine (communicating kernels, with Iris on it) are proved abstractions of it. Proofs use only Lean's standard axioms; no <code>sorry</code>.</p>
+
+<h2>Coverage</h2>
+<p><strong>CUDA:</strong> <code>__global__</code> kernels with <code>int</code>/<code>float</code> scalars and arrays, <code>__shared__</code> arrays, 1-D and 2-D launches, <code>threadIdx</code>/<code>blockIdx</code>/<code>blockDim</code>/<code>gridDim</code>, integer and float arithmetic, <code>if</code>/<code>for</code>/<code>while</code>, <code>__syncthreads()</code>, <code>atomicAdd</code> on <code>int</code> and <code>float</code>, <code>__shfl_down_sync</code>, <code>cuda::atomic_ref</code> loads and stores with <code>memory_order</code> and <code>thread_scope</code>.</p>
+<p><strong>PTX:</strong> <code>ld</code>/<code>st</code> weak, relaxed, acquire, release at cta/gpu/sys scope, <code>red</code>/<code>atom</code>, <code>bar.sync</code>, <code>shfl.sync</code>, <code>fence.sc</code>; morally strong operations, base causality order, observation order, coherence; the axioms Coherence, Fence-SC, Atomicity, No-Thin-Air, SC-per-location, Causality; data races as the ISA defines them.</p>
+<p><strong>Not covered:</strong> arbitrary CUDA, floating-point rounding error, termination of spins, Iris rules for barriers and shuffles.</p>
+
+<h2>Specs</h2>
+<p>A <code>contract</code> block beside the kernel, outside the CUDA source; the same text is the Lean proposition and the card below. Clauses: <code>requires</code>, <code>ensures t when lo ≤ i &lt; hi | otherwise</code>, <code>unchanged a</code>, <code>old(a[i])</code>, <code>sum k &lt; n, e</code>, <code>launch 2D</code>, <code>physical</code>. Meaning: under the requires, every completed race-free execution the PTX model admits satisfies the ensures, and such an execution exists. The proof is <code>theorem k_contract : k.contract</code>.</p>
+
+<h2>Examples</h2>
+</div>
 
 <section class="ex">
-<div class="exhead"><a href="vadd.html"><code>vadd</code></a> <span class="meta"></span></div>
+<div class="exhead"><a href="matmul_tiled.html"><code>matmul_tiled</code></a> <span class="meta">shared-memory tiles across barriers in a loop: C = A × B</span></div>
 <div class="grid">
-  <div class="code"><div class="ln"><span class="n">1</span><span><span class="kw">__global__</span> <span class="kw">void</span> vadd(<span class="kw">int</span>* c, <span class="kw">int</span>* a, <span class="kw">int</span>* b, <span class="kw">int</span> n) {</span></div><div class="ln"><span class="n">2</span><span>  <span class="kw">int</span> i = <span class="bi">blockIdx.x</span> * <span class="bi">blockDim.x</span> + <span class="bi">threadIdx.x</span>;</span></div><div class="ln"><span class="n">3</span><span>  <span class="kw">if</span> (i &lt; n) c[i] = a[i] + b[i];</span></div><div class="ln"><span class="n">4</span><span>}</span></div></div>
+  <div class="code"><div class="ln"><span class="n">1</span><span><span class="kw">__global__</span> <span class="kw">void</span> matmul_tiled(<span class="kw">int</span>* C, <span class="kw">int</span>* A, <span class="kw">int</span>* B, <span class="kw">int</span> n) {</span></div><div class="ln"><span class="n">2</span><span>  <span class="kw">__shared__</span> <span class="kw">int</span> As[<span class="nu">256</span>];</span></div><div class="ln"><span class="n">3</span><span>  <span class="kw">__shared__</span> <span class="kw">int</span> Bs[<span class="nu">256</span>];</span></div><div class="ln"><span class="n">4</span><span>  <span class="kw">int</span> tx = <span class="bi">threadIdx.x</span>;</span></div><div class="ln"><span class="n">5</span><span>  <span class="kw">int</span> ty = <span class="bi">threadIdx.y</span>;</span></div><div class="ln"><span class="n">6</span><span>  <span class="kw">int</span> row = <span class="bi">blockIdx.y</span> * <span class="nu">16</span> + ty;</span></div><div class="ln"><span class="n">7</span><span>  <span class="kw">int</span> col = <span class="bi">blockIdx.x</span> * <span class="nu">16</span> + tx;</span></div><div class="ln"><span class="n">8</span><span>  <span class="kw">int</span> s = <span class="nu">0</span>;</span></div><div class="ln"><span class="n">9</span><span>  <span class="kw">for</span> (<span class="kw">int</span> k0 = <span class="nu">0</span>; k0 &lt; n; k0 += <span class="nu">16</span>) {</span></div><div class="ln"><span class="n">10</span><span>    As[ty * <span class="nu">16</span> + tx] = A[row * n + (k0 + tx)];</span></div><div class="ln"><span class="n">11</span><span>    Bs[ty * <span class="nu">16</span> + tx] = B[(k0 + ty) * n + col];</span></div><div class="ln"><span class="n">12</span><span>    <span class="bi">__syncthreads</span>();</span></div><div class="ln"><span class="n">13</span><span>    <span class="kw">for</span> (<span class="kw">int</span> k = <span class="nu">0</span>; k &lt; <span class="nu">16</span>; k++) s += As[ty * <span class="nu">16</span> + k] * Bs[k * <span class="nu">16</span> + tx];</span></div><div class="ln"><span class="n">14</span><span>    <span class="bi">__syncthreads</span>();</span></div><div class="ln"><span class="n">15</span><span>  }</span></div><div class="ln"><span class="n">16</span><span>  C[row * n + col] = s;</span></div><div class="ln"><span class="n">17</span><span>}</span></div></div>
   <article class="card">
-    <div class="head"><span class="sig"><span class="k">vadd</span>(<span class="ty">int*</span> <var>c</var>, <span class="ty">int*</span> <var>a</var>, <span class="ty">int*</span> <var>b</var>, <span class="ty">int</span> <var>n</var>) <span class="launch">1-D launch</span></span><span class="pill proved">✓ proved</span></div>
+    <div class="head"><span class="sig"><span class="k">matmul_tiled</span>(<span class="ty">int*</span> <var>C</var>, <span class="ty">int*</span> <var>A</var>, <span class="ty">int*</span> <var>B</var>, <span class="ty">int</span> <var>n</var>) <span class="launch">2-D launch</span></span><span class="pill proved">✓ proved</span></div>
     <div class="rows">
-      <div class="chk row" title="Lean: n ≤ gridDim * blockDim"><span class="lab">Requires</span><span class="m"><var>n</var> ≤ <span class="b">gridDim</span> · <span class="b">blockDim</span></span></div>
-      <div class="chk row" title="Lean: gridDim * blockDim ≤ 2^31"><span class="lab">Requires</span><span class="m"><span class="b">gridDim</span> · <span class="b">blockDim</span> ≤ 2<sup>31</sup></span></div>
-      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; n → int32 (a[i] &#43; b[i])"><span class="lab">Requires</span><span class="m">−2<sup>31</sup> ≤ <var>a</var>[<var>i</var>] + <var>b</var>[<var>i</var>] &lt; 2<sup>31</sup></span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; <var>n</var></span></div>
-      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; n → c[i] = a[i] &#43; b[i]"><span class="lab">Ensures</span><span class="m"><var>c</var>[<var>i</var>] = <var>a</var>[<var>i</var>] + <var>b</var>[<var>i</var>]</span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; <var>n</var></span></div>
-      <div class="chk row" title="Lean: ∀ i, (i &lt; 0 ∨ n ≤ i) → c[i] = old(c[i])"><span class="lab">Ensures</span><span class="m"><var>c</var>[<var>i</var>] <span class="word">unchanged</span></span><span class="m cond"><span class="word">for every other</span> <var>i</var></span></div>
-      <div class="chk row" title="Lean: ∀ i, a[i] = old(a[i])"><span class="lab">Ensures</span><span class="m"><var>a</var> <span class="word">unchanged</span></span></div>
-      <div class="chk row" title="Lean: ∀ i, b[i] = old(b[i])"><span class="lab">Ensures</span><span class="m"><var>b</var> <span class="word">unchanged</span></span></div>
-      <div class="chk row" title="Lean: Typed args mem sh → … → vadd.Safe gd bd ids args mem sh fl ∧ vadd.DRF gd bd ids args mem sh fl   (part of every contract)"><span class="m"><span class="auto">No data race (two threads touch a cell only if both read it or both add to it atomically); barriers are uniform; every loop terminates; no <code>int</code> operation overflows or divides by zero; every shared-memory access is in bounds. Every <code>int</code> parameter and cell is assumed to hold a 32-bit value, as its type says.</span></span></div>
+      <div class="chk row" title="Lean: blockDim.x = 16"><span class="lab">Requires</span><span class="m"><span class="b">blockDim.x</span> = 16</span></div>
+      <div class="chk row" title="Lean: blockDim.y = 16"><span class="lab">Requires</span><span class="m"><span class="b">blockDim.y</span> = 16</span></div>
+      <div class="chk row" title="Lean: gridDim.y = gridDim.x"><span class="lab">Requires</span><span class="m"><span class="b">gridDim.y</span> = <span class="b">gridDim.x</span></span></div>
+      <div class="chk row" title="Lean: n = gridDim.x * 16"><span class="lab">Requires</span><span class="m"><var>n</var> = <span class="b">gridDim.x</span> · 16</span></div>
+      <div class="chk row" title="Lean: n * n ≤ 2^31"><span class="lab">Requires</span><span class="m"><var>n</var> · <var>n</var> ≤ 2<sup>31</sup></span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; n → ∀ j, 0 ≤ j → j &lt; n → ∀ k, 0 ≤ k → k &lt; n → int32 (A[i * n &#43; k] * B[k * n &#43; j])"><span class="lab">Requires</span><span class="m">−2<sup>31</sup> ≤ <var>A</var>[<var>i</var> · <var>n</var> + <var>k</var>] · <var>B</var>[<var>k</var> · <var>n</var> + <var>j</var>] &lt; 2<sup>31</sup></span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; <var>n</var>, 0 ≤ <var>j</var> &lt; <var>n</var>, 0 ≤ <var>k</var> &lt; <var>n</var></span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; n → ∀ j, 0 ≤ j → j &lt; n → ∀ K, 0 ≤ K → K &lt; n &#43; 1 → int32 (sum k &lt; K, A[i * n &#43; k] * B[k * n &#43; j])"><span class="lab">Requires</span><span class="m">−2<sup>31</sup> ≤ <span class="sum">Σ<sub><var>k</var> &lt; <var>K</var></sub></span><var>A</var>[<var>i</var> · <var>n</var> + <var>k</var>] · <var>B</var>[<var>k</var> · <var>n</var> + <var>j</var>] &lt; 2<sup>31</sup></span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; <var>n</var>, 0 ≤ <var>j</var> &lt; <var>n</var>, 0 ≤ <var>K</var> &lt; <var>n</var> + 1</span></div>
+      <div class="chk row" title="Lean: ∀ i, 0 ≤ i → i &lt; n → ∀ j, 0 ≤ j → j &lt; n → C[i * n &#43; j] = sum k &lt; n, A[i * n &#43; k] * B[k * n &#43; j]"><span class="lab">Ensures</span><span class="m"><var>C</var>[<var>i</var> · <var>n</var> + <var>j</var>] = <span class="sum">Σ<sub><var>k</var> &lt; <var>n</var></sub></span><var>A</var>[<var>i</var> · <var>n</var> + <var>k</var>] · <var>B</var>[<var>k</var> · <var>n</var> + <var>j</var>]</span><span class="m cond"><span class="word">for</span> 0 ≤ <var>i</var> &lt; <var>n</var>, 0 ≤ <var>j</var> &lt; <var>n</var></span></div>
+      <div class="chk row" title="Lean: ∀ (c : Int), (c &lt; 0 ∨ n * n ≤ c) → C[c] = old(C[c])"><span class="lab">Ensures</span><span class="m">∀ <var>c</var>, (<var>c</var> &lt; 0 ∨ <var>n</var> · <var>n</var> ≤ <var>c</var>) ⇒ <var>C</var>[<var>c</var>] = <span class="word">old</span>(<var>C</var>[<var>c</var>])</span></div>
+      <div class="chk row" title="Lean: ∀ i, A[i] = old(A[i])"><span class="lab">Ensures</span><span class="m"><var>A</var> <span class="word">unchanged</span></span></div>
+      <div class="chk row" title="Lean: ∀ i, B[i] = old(B[i])"><span class="lab">Ensures</span><span class="m"><var>B</var> <span class="word">unchanged</span></span></div>
+      <div class="chk row" title="Lean: Typed args mem sh → … → matmul_tiled.Safe gd bd ids args mem sh fl ∧ matmul_tiled.DRF gd bd ids args mem sh fl   (part of every contract)"><span class="m"><span class="auto">No data race (two threads touch a cell only if both read it or both add to it atomically); barriers are uniform; every loop terminates; no <code>int</code> operation overflows or divides by zero; every shared-memory access is in bounds. Every <code>int</code> parameter and cell is assumed to hold a 32-bit value, as its type says.</span></span></div>
     </div>
-    <details><summary>Lean</summary><pre>/-- `c ← a &#43; b` on the first `n` cells. The sums must fit in an `int`. -/
-contract vadd (c : int*) (a : int*) (b : int*) (n : int) where
-  requires n ≤ gridDim * blockDim
-  requires gridDim * blockDim ≤ 2^31
-  requires int32 (a[i] &#43; b[i])  when 0 ≤ i &lt; n
-  ensures  c[i] = a[i] &#43; b[i]   when 0 ≤ i &lt; n
-  ensures  c[i] = old(c[i])     otherwise
-  unchanged a
-  unchanged b</pre></details>
+    <details><summary>Lean</summary><pre>/-- Tiled matrix multiply, `C ← A·B` for square `n × n` matrices with `n` a multiple of 16: a
+`16 × 16` block computes one tile of `C`, walking the `n / 16` tiles of its row of `A` and its
+column of `B` through shared memory, with one barrier after loading a pair of tiles and one
+after using them. The indices, every product and every partial sum of a row by a column
+are computed in `int` and must fit. -/
+contract matmul_tiled (C : int*) (A : int*) (B : int*) (n : int) where
+  launch 2D
+  requires blockDim.x = 16
+  requires blockDim.y = 16
+  requires gridDim.y = gridDim.x
+  requires n = gridDim.x * 16
+  requires n * n ≤ 2^31
+  requires int32 (A[i * n &#43; k] * B[k * n &#43; j])             when 0 ≤ i &lt; n, 0 ≤ j &lt; n, 0 ≤ k &lt; n
+  requires int32 (sum k &lt; K, A[i * n &#43; k] * B[k * n &#43; j])  when 0 ≤ i &lt; n, 0 ≤ j &lt; n, 0 ≤ K &lt; n &#43; 1
+  ensures  C[i * n &#43; j] = sum k &lt; n, A[i * n &#43; k] * B[k * n &#43; j]  when 0 ≤ i &lt; n, 0 ≤ j &lt; n
+  ensures  ∀ (c : Int), (c &lt; 0 ∨ n * n ≤ c) → C[c] = old(C[c])
+  unchanged A
+  unchanged B</pre></details>
   </article>
 </div>
 </section><section class="ex">
-<div class="exhead"><a href="dot.html"><code>dot</code></a> <span class="meta">shared-memory reduction across barriers in a loop, then atomicAdd across blocks</span></div>
+<div class="exhead"><a href="dot.html"><code>dot</code></a> <span class="meta">shared-memory reduction across barriers, then atomicAdd across blocks</span></div>
 <div class="grid">
   <div class="code"><div class="ln"><span class="n">1</span><span><span class="kw">__global__</span> <span class="kw">void</span> dot(<span class="kw">int</span>* out, <span class="kw">int</span>* x, <span class="kw">int</span>* y, <span class="kw">int</span> n) {</span></div><div class="ln"><span class="n">2</span><span>  <span class="kw">__shared__</span> <span class="kw">int</span> s[<span class="nu">256</span>];</span></div><div class="ln"><span class="n">3</span><span>  <span class="kw">int</span> tid = <span class="bi">threadIdx.x</span>;</span></div><div class="ln"><span class="n">4</span><span>  <span class="kw">int</span> i = <span class="bi">blockIdx.x</span> * <span class="bi">blockDim.x</span> + tid;</span></div><div class="ln"><span class="n">5</span><span>  <span class="kw">if</span> (i &lt; n) s[tid] = x[i] * y[i]; <span class="kw">else</span> s[tid] = <span class="nu">0</span>;</span></div><div class="ln"><span class="n">6</span><span>  <span class="bi">__syncthreads</span>();</span></div><div class="ln"><span class="n">7</span><span>  <span class="kw">for</span> (<span class="kw">int</span> d = <span class="bi">blockDim.x</span> / <span class="nu">2</span>; d &gt; <span class="nu">0</span>; d /= <span class="nu">2</span>) {</span></div><div class="ln"><span class="n">8</span><span>    <span class="kw">if</span> (tid &lt; d) s[tid] += s[tid + d];</span></div><div class="ln"><span class="n">9</span><span>    <span class="bi">__syncthreads</span>();</span></div><div class="ln"><span class="n">10</span><span>  }</span></div><div class="ln"><span class="n">11</span><span>  <span class="kw">if</span> (tid == <span class="nu">0</span>) <span class="bi">atomicAdd</span>(&amp;out[<span class="nu">0</span>], s[<span class="nu">0</span>]);</span></div><div class="ln"><span class="n">12</span><span>}</span></div></div>
   <article class="card">
@@ -221,12 +249,7 @@ contract publish (out : int*) (data : int*) (flag : int*) (src : int*) where
 </div>
 </section>
 
-<div class="prose">
-<p>A contract is a theorem about every execution the PTX memory model admits; race freedom is proved, not assumed. Barrier-synchronized kernels are proved in a lockstep model that is proved sound and complete for the PTX machine; kernels whose threads communicate are proved directly from the PTX axioms, or in Iris on an interleaving machine justified against it. No <code>sorry</code>; axioms <code>propext</code>, <code>Classical.choice</code>, <code>Quot.sound</code>.</p>
-<p>Not covered: shuffles in the machine-to-interleaving direction; release/acquire kernels in Iris beyond their sequentially consistent runs; Iris rules for barriers; floating-point rounding; termination of spins.</p>
-</div>
-
-<h2 style="margin-top:34px">Kernels</h2>
+<h2 style="margin-top:34px">All kernels</h2>
 <table class="suite"><tr><th>Kernel</th><th>What it does</th><th>Contract</th></tr>
 <tr><td><a href="block_reverse.html"><code>block_reverse</code></a></td><td>Reverses each block&#39;s segment of <code>src</code> into <code>out</code> through shared memory: cell <code>t</code> of block <code>b</code> receives cell <code>blockDim − 1 − t</code> of the same block.</td><td>
   <span class="pill proved">✓ proved</span>
