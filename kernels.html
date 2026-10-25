@@ -110,7 +110,7 @@ a { color: inherit; }
 .ex { margin: 14px 0 26px; }
 .exhead { margin-bottom: 8px; }
 .ex .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-.explorer { display: flex; gap: 16px; align-items: flex-start; }
+.explorer { display: flex; gap: 16px; align-items: flex-start; justify-content: flex-start; }
 .explorer .list { width: 210px; flex: none; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; }
 .explorer .list .grp { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 14px 0 4px; }
 .explorer .list a { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; border-radius: 6px; color: var(--ink); text-decoration: none; }
@@ -118,10 +118,10 @@ a { color: inherit; }
 .explorer .list .pill { font-size: 11px; padding: 0 6px; }
 .pane { display: flex; gap: 18px; flex: 1; min-width: 0; align-items: flex-start; }
 .pane[hidden] { display: none; }
-.pane .col { flex: 1 1 0; min-width: 0; }
-.pane .col.proofcol { flex: 1.2 1 0; }
+.pane .col { flex: 0 0 auto; width: 640px; max-width: 42vw; min-width: 0; }
+.pane .col.proofcol { flex: 1 1 0; width: auto; max-width: none; }
 .colhead { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 0 8px; }
-.code.proof { max-height: calc(100vh - 110px); overflow: auto; }
+.code.proof { max-height: calc(100vh - 110px); overflow: auto; font-size: 14px; }
 @media (max-width: 1100px) { .pane { display: block; } .pane .col + .col { margin-top: 18px; } }
 table.suite td, table.suite th { vertical-align: top; }
 table.suite td:last-child { white-space: nowrap; }
