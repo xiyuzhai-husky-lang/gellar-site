@@ -117,6 +117,7 @@ a { color: inherit; }
 .explorer .list a.here { background: var(--panel); border: 1px solid var(--rule); }
 .explorer .list .pill { font-size: 11px; padding: 0 6px; }
 .pane { display: flex; gap: 18px; flex: 1; min-width: 0; align-items: flex-start; }
+.pane[hidden] { display: none; }
 .pane .col { flex: 1; min-width: 0; }
 .colhead { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 0 8px; }
 .code.proof { max-height: calc(100vh - 80px); overflow: auto; }
