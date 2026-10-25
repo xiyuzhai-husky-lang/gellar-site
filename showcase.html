@@ -5,6 +5,7 @@
   --bg: #fbfaf7; --panel: #ffffff; --ink: #1d1d1f; --muted: #6b6b70; --rule: #e6e3dc;
   --code-bg: #f6f4ef; --hl: #fff1c2; --link: #fff7dc;
   --kw: #8a3ffc; --bi: #0f6fb8; --nu: #b45309; --st: #15803d; --cm: #8b8b93;
+  --ty: #0b7285; --ql: #7c3aed; --fn: #1d4ed8; --bf: #c2410c; --ar: #0f766e; --sh: #a16207; --pm: #374151; --lc: #1f2937; --rf: #be185d; --cs: #7c2d12;
   --ok: #157f3b; --ok-bg: #e3f4e8; --ok-rule: #2f9e57; --ok-hover: #f1faf3;
   --warn: #9a6100; --warn-bg: #fdf0d5; --bad: #b42318; --bad-bg: #fde4e1;
   --idle: #5b5b63; --idle-bg: #ececef; --note-rule: #b9b8bd;
@@ -14,6 +15,7 @@
     --bg: #141416; --panel: #1b1b1e; --ink: #e8e6e1; --muted: #9a9aa2; --rule: #2c2c31;
     --code-bg: #18181b; --hl: #3a3215; --link: #2a2614;
     --kw: #c4a1ff; --bi: #6cb6ff; --nu: #f0a35e; --st: #6fd08c; --cm: #74747c;
+    --ty: #67e8f9; --ql: #c4b5fd; --fn: #93c5fd; --bf: #fdba74; --ar: #5eead4; --sh: #fde047; --pm: #d1d5db; --lc: #e5e7eb; --rf: #f9a8d4; --cs: #fca5a5;
     --ok: #6fd08c; --ok-bg: #16301f; --ok-rule: #3f9e63; --ok-hover: #182a1e;
     --warn: #f0c35e; --warn-bg: #352a12; --bad: #ff8a80; --bad-bg: #3a1714;
     --idle: #b0b0b8; --idle-bg: #2a2a2f; --note-rule: #55555c;
@@ -32,7 +34,7 @@ h1 { font: 600 22px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; margin: 
 @media (max-width: 960px) { .grid { grid-template-columns: minmax(0, 1fr); } .summary { margin-left: 0; } }
 section h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
   font-weight: 600; margin: 0 0 8px; }
-.code { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 8px; overflow-x: auto;
+.code { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 10px; overflow-x: auto; box-shadow: 0 1px 2px rgba(0,0,0,.06), inset 0 0 0 1px rgba(255,255,255,.4);
   font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 8px 0; }
 .code .ln { display: flex; padding: 0 14px 0 0; white-space: pre; }
 .code .ln .n { flex: none; width: 3.2em; text-align: right; padding-right: 14px; color: var(--muted);
@@ -42,6 +44,9 @@ section h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; 
 .code .ln.link { background: var(--link); }
 .kw { color: var(--kw); } .bi { color: var(--bi); } .nu { color: var(--nu); } .st { color: var(--st); }
 .cm { color: var(--cm); font-style: italic; }
+.ty { color: var(--ty); } .ql { color: var(--ql); font-style: italic; } .fn { color: var(--fn); font-weight: 600; }
+.bf { color: var(--bf); font-weight: 600; } .ar { color: var(--ar); font-weight: 600; } .sh { color: var(--sh); font-weight: 600; }
+.pm { color: var(--pm); } .lc { color: var(--lc); } .rf { color: var(--rf); } .me { color: var(--bf); } .cs { color: var(--cs); }
 .sticky { position: sticky; top: 16px; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--muted);
   background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 8px 12px; margin-bottom: 14px; }
@@ -95,35 +100,44 @@ a { color: inherit; }
 .prose p { margin: 8px 0 12px; }
 .prose h2 { margin-top: 30px; }
 .prose li { margin: 6px 0; }
-nav.top { display: flex; gap: 18px; margin: 0 0 22px; font-size: 14px; }
-nav.top a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
-nav.top a.here { border-bottom: 2px solid var(--ink); }
-.four { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 10px 0 24px; }
-@media (max-width: 760px) { .four { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.four a.box { display: block; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; color: var(--ink); text-decoration: none; }
-.four a.box b { display: block; margin-bottom: 6px; }
+.shell { display: flex; align-items: flex-start; }
+.side { position: sticky; top: 0; width: 200px; flex: none; padding: 28px 16px; border-right: 1px solid var(--rule); min-height: 100vh; }
+.side .brand { display: block; font: 600 22px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); text-decoration: none; margin-bottom: 18px; }
+.side nav a { display: block; padding: 6px 0; color: var(--ink); text-decoration: none; font-size: 15px; }
+.side nav a.here { font-weight: 600; }
+.shell main { flex: 1; min-width: 0; max-width: 1320px; padding: 28px 24px 64px; }
+@media (max-width: 760px) { .shell { display: block; } .side { position: static; width: auto; min-height: 0; border-right: 0; border-bottom: 1px solid var(--rule); } .side nav { display: flex; gap: 14px; } }
 .ex { margin: 14px 0 26px; }
 .exhead { margin-bottom: 8px; }
 .ex .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.explorer { display: flex; gap: 18px; align-items: flex-start; }
+.explorer .list { width: 210px; flex: none; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; }
+.explorer .list .grp { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 14px 0 4px; }
+.explorer .list a { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; border-radius: 6px; color: var(--ink); text-decoration: none; }
+.explorer .list a.here { background: var(--panel); border: 1px solid var(--rule); }
+.explorer .list .pill { font-size: 11px; padding: 0 6px; }
+.pane { display: flex; gap: 18px; flex: 1; min-width: 0; align-items: flex-start; }
+.pane .col { flex: 1; min-width: 0; }
+.colhead { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 0 8px; }
+.code.proof { max-height: calc(100vh - 80px); overflow: auto; }
+@media (max-width: 1100px) { .pane { display: block; } .pane .col + .col { margin-top: 18px; } }
 table.suite td, table.suite th { vertical-align: top; }
 table.suite td:last-child { white-space: nowrap; }
 .pill { white-space: nowrap; }
 </style></head>
-<body><main>
-<header><h1><a href="showcase.html" style="color:inherit;text-decoration:none">gellar</a></h1><div class="meta">CUDA kernels proved correct in Lean against the PTX memory consistency model</div></header>
-<nav class="top"><a href="foundation.html">Foundation</a><a href="coverage.html">Coverage</a><a href="kernels.html">Examples</a><a href="specs.html">Specs</a></nav>
+<body><div class="shell">
+<aside class="side">
+  <a class="brand" href="index.html">gellar</a>
+  <nav><a href="foundation.html">Foundation</a><a href="coverage.html">Coverage</a><a href="kernels.html">Examples</a><a href="specs.html">Specs</a></nav>
+</aside>
+<main>
+<header><div class="meta">CUDA kernels proved correct in Lean against the PTX memory consistency model</div></header>
 
 <div class="prose"><p>Infrastructure for verifying AI infrastructure: a CUDA kernel, as written, is translated to Lean, given a contract, and the contract is proved about the executions the PTX memory model admits.</p></div>
-<div class="four">
-  <a class="box" href="foundation.html"><b>Foundation</b>The PTX memory consistency model, formalized from the ISA and checked against litmus tests.</a>
-  <a class="box" href="coverage.html"><b>Coverage</b>Which CUDA the translator accepts, which PTX the model has, and what is outside both.</a>
-  <a class="box" href="kernels.html"><b>Examples</b>Every kernel with its source, its contract and whether Lean proved it.</a>
-  <a class="box" href="specs.html"><b>Specs</b>The contract language, what a contract means, and how it is Lean.</a>
-</div>
 <section class="ex">
-<div class="exhead"><a href="matmul_tiled.html"><code>matmul_tiled</code></a> <span class="meta">shared-memory tiles across barriers in a loop: C = A × B</span></div>
+<div class="exhead"><a href="kernels.html#matmul_tiled"><code>matmul_tiled</code></a> <span class="meta">shared-memory tiles across barriers in a loop: C = A × B · <a href="kernels.html#matmul_tiled">proof</a></span></div>
 <div class="grid">
-  <div class="code"><div class="ln"><span class="n">1</span><span><span class="kw">__global__</span> <span class="kw">void</span> matmul_tiled(<span class="kw">int</span>* C, <span class="kw">int</span>* A, <span class="kw">int</span>* B, <span class="kw">int</span> n) {</span></div><div class="ln"><span class="n">2</span><span>  <span class="kw">__shared__</span> <span class="kw">int</span> As[<span class="nu">256</span>];</span></div><div class="ln"><span class="n">3</span><span>  <span class="kw">__shared__</span> <span class="kw">int</span> Bs[<span class="nu">256</span>];</span></div><div class="ln"><span class="n">4</span><span>  <span class="kw">int</span> tx = <span class="bi">threadIdx.x</span>;</span></div><div class="ln"><span class="n">5</span><span>  <span class="kw">int</span> ty = <span class="bi">threadIdx.y</span>;</span></div><div class="ln"><span class="n">6</span><span>  <span class="kw">int</span> row = <span class="bi">blockIdx.y</span> * <span class="nu">16</span> + ty;</span></div><div class="ln"><span class="n">7</span><span>  <span class="kw">int</span> col = <span class="bi">blockIdx.x</span> * <span class="nu">16</span> + tx;</span></div><div class="ln"><span class="n">8</span><span>  <span class="kw">int</span> s = <span class="nu">0</span>;</span></div><div class="ln"><span class="n">9</span><span>  <span class="kw">for</span> (<span class="kw">int</span> k0 = <span class="nu">0</span>; k0 &lt; n; k0 += <span class="nu">16</span>) {</span></div><div class="ln"><span class="n">10</span><span>    As[ty * <span class="nu">16</span> + tx] = A[row * n + (k0 + tx)];</span></div><div class="ln"><span class="n">11</span><span>    Bs[ty * <span class="nu">16</span> + tx] = B[(k0 + ty) * n + col];</span></div><div class="ln"><span class="n">12</span><span>    <span class="bi">__syncthreads</span>();</span></div><div class="ln"><span class="n">13</span><span>    <span class="kw">for</span> (<span class="kw">int</span> k = <span class="nu">0</span>; k &lt; <span class="nu">16</span>; k++) s += As[ty * <span class="nu">16</span> + k] * Bs[k * <span class="nu">16</span> + tx];</span></div><div class="ln"><span class="n">14</span><span>    <span class="bi">__syncthreads</span>();</span></div><div class="ln"><span class="n">15</span><span>  }</span></div><div class="ln"><span class="n">16</span><span>  C[row * n + col] = s;</span></div><div class="ln"><span class="n">17</span><span>}</span></div></div>
+  <div class="code"><div class="ln"><span class="n">1</span><span><span class="ql">__global__</span> <span class="ty">void</span> <span class="fn">matmul_tiled</span>(<span class="ty">int</span>* <span class="ar">C</span>, <span class="ty">int</span>* <span class="ar">A</span>, <span class="ty">int</span>* <span class="ar">B</span>, <span class="ty">int</span> <span class="pm">n</span>) {</span></div><div class="ln"><span class="n">2</span><span>  <span class="ql">__shared__</span> <span class="ty">int</span> <span class="sh">As</span>[<span class="nu">256</span>];</span></div><div class="ln"><span class="n">3</span><span>  <span class="ql">__shared__</span> <span class="ty">int</span> <span class="sh">Bs</span>[<span class="nu">256</span>];</span></div><div class="ln"><span class="n">4</span><span>  <span class="ty">int</span> <span class="lc">tx</span> = <span class="bi">threadIdx</span>.<span class="bi">x</span>;</span></div><div class="ln"><span class="n">5</span><span>  <span class="ty">int</span> <span class="lc">ty</span> = <span class="bi">threadIdx</span>.<span class="bi">y</span>;</span></div><div class="ln"><span class="n">6</span><span>  <span class="ty">int</span> <span class="lc">row</span> = <span class="bi">blockIdx</span>.<span class="bi">y</span> * <span class="nu">16</span> + <span class="lc">ty</span>;</span></div><div class="ln"><span class="n">7</span><span>  <span class="ty">int</span> <span class="lc">col</span> = <span class="bi">blockIdx</span>.<span class="bi">x</span> * <span class="nu">16</span> + <span class="lc">tx</span>;</span></div><div class="ln"><span class="n">8</span><span>  <span class="ty">int</span> <span class="lc">s</span> = <span class="nu">0</span>;</span></div><div class="ln"><span class="n">9</span><span>  <span class="kw">for</span> (<span class="ty">int</span> <span class="lc">k0</span> = <span class="nu">0</span>; <span class="lc">k0</span> &lt; <span class="pm">n</span>; <span class="lc">k0</span> += <span class="nu">16</span>) {</span></div><div class="ln"><span class="n">10</span><span>    <span class="sh">As</span>[<span class="lc">ty</span> * <span class="nu">16</span> + <span class="lc">tx</span>] = <span class="ar">A</span>[<span class="lc">row</span> * <span class="pm">n</span> + (<span class="lc">k0</span> + <span class="lc">tx</span>)];</span></div><div class="ln"><span class="n">11</span><span>    <span class="sh">Bs</span>[<span class="lc">ty</span> * <span class="nu">16</span> + <span class="lc">tx</span>] = <span class="ar">B</span>[(<span class="lc">k0</span> + <span class="lc">ty</span>) * <span class="pm">n</span> + <span class="lc">col</span>];</span></div><div class="ln"><span class="n">12</span><span>    <span class="bf">__syncthreads</span>();</span></div><div class="ln"><span class="n">13</span><span>    <span class="kw">for</span> (<span class="ty">int</span> <span class="lc">k</span> = <span class="nu">0</span>; <span class="lc">k</span> &lt; <span class="nu">16</span>; <span class="lc">k</span>++) <span class="lc">s</span> += <span class="sh">As</span>[<span class="lc">ty</span> * <span class="nu">16</span> + <span class="lc">k</span>] * <span class="sh">Bs</span>[<span class="lc">k</span> * <span class="nu">16</span> + <span class="lc">tx</span>];</span></div><div class="ln"><span class="n">14</span><span>    <span class="bf">__syncthreads</span>();</span></div><div class="ln"><span class="n">15</span><span>  }</span></div><div class="ln"><span class="n">16</span><span>  <span class="ar">C</span>[<span class="lc">row</span> * <span class="pm">n</span> + <span class="lc">col</span>] = <span class="lc">s</span>;</span></div><div class="ln"><span class="n">17</span><span>}</span></div></div>
   <article class="card">
     <div class="head"><span class="sig"><span class="k">matmul_tiled</span>(<span class="ty">int*</span> <var>C</var>, <span class="ty">int*</span> <var>A</var>, <span class="ty">int*</span> <var>B</var>, <span class="ty">int</span> <var>n</var>) <span class="launch">2-D launch</span></span><span class="pill proved">✓ proved</span></div>
     <div class="rows">
@@ -143,9 +157,9 @@ table.suite td:last-child { white-space: nowrap; }
   </article>
 </div>
 </section><section class="ex">
-<div class="exhead"><a href="dot.html"><code>dot</code></a> <span class="meta">shared-memory reduction across barriers, then atomicAdd across blocks</span></div>
+<div class="exhead"><a href="kernels.html#dot"><code>dot</code></a> <span class="meta">shared-memory reduction across barriers, then atomicAdd across blocks · <a href="kernels.html#dot">proof</a></span></div>
 <div class="grid">
-  <div class="code"><div class="ln"><span class="n">1</span><span><span class="kw">__global__</span> <span class="kw">void</span> dot(<span class="kw">int</span>* out, <span class="kw">int</span>* x, <span class="kw">int</span>* y, <span class="kw">int</span> n) {</span></div><div class="ln"><span class="n">2</span><span>  <span class="kw">__shared__</span> <span class="kw">int</span> s[<span class="nu">256</span>];</span></div><div class="ln"><span class="n">3</span><span>  <span class="kw">int</span> tid = <span class="bi">threadIdx.x</span>;</span></div><div class="ln"><span class="n">4</span><span>  <span class="kw">int</span> i = <span class="bi">blockIdx.x</span> * <span class="bi">blockDim.x</span> + tid;</span></div><div class="ln"><span class="n">5</span><span>  <span class="kw">if</span> (i &lt; n) s[tid] = x[i] * y[i]; <span class="kw">else</span> s[tid] = <span class="nu">0</span>;</span></div><div class="ln"><span class="n">6</span><span>  <span class="bi">__syncthreads</span>();</span></div><div class="ln"><span class="n">7</span><span>  <span class="kw">for</span> (<span class="kw">int</span> d = <span class="bi">blockDim.x</span> / <span class="nu">2</span>; d &gt; <span class="nu">0</span>; d /= <span class="nu">2</span>) {</span></div><div class="ln"><span class="n">8</span><span>    <span class="kw">if</span> (tid &lt; d) s[tid] += s[tid + d];</span></div><div class="ln"><span class="n">9</span><span>    <span class="bi">__syncthreads</span>();</span></div><div class="ln"><span class="n">10</span><span>  }</span></div><div class="ln"><span class="n">11</span><span>  <span class="kw">if</span> (tid == <span class="nu">0</span>) <span class="bi">atomicAdd</span>(&amp;out[<span class="nu">0</span>], s[<span class="nu">0</span>]);</span></div><div class="ln"><span class="n">12</span><span>}</span></div></div>
+  <div class="code"><div class="ln"><span class="n">1</span><span><span class="ql">__global__</span> <span class="ty">void</span> <span class="fn">dot</span>(<span class="ty">int</span>* <span class="ar">out</span>, <span class="ty">int</span>* <span class="ar">x</span>, <span class="ty">int</span>* <span class="ar">y</span>, <span class="ty">int</span> <span class="pm">n</span>) {</span></div><div class="ln"><span class="n">2</span><span>  <span class="ql">__shared__</span> <span class="ty">int</span> <span class="sh">s</span>[<span class="nu">256</span>];</span></div><div class="ln"><span class="n">3</span><span>  <span class="ty">int</span> <span class="lc">tid</span> = <span class="bi">threadIdx</span>.<span class="bi">x</span>;</span></div><div class="ln"><span class="n">4</span><span>  <span class="ty">int</span> <span class="lc">i</span> = <span class="bi">blockIdx</span>.<span class="bi">x</span> * <span class="bi">blockDim</span>.<span class="bi">x</span> + <span class="lc">tid</span>;</span></div><div class="ln"><span class="n">5</span><span>  <span class="kw">if</span> (<span class="lc">i</span> &lt; <span class="pm">n</span>) <span class="sh">s</span>[<span class="lc">tid</span>] = <span class="ar">x</span>[<span class="lc">i</span>] * <span class="ar">y</span>[<span class="lc">i</span>]; <span class="kw">else</span> <span class="sh">s</span>[<span class="lc">tid</span>] = <span class="nu">0</span>;</span></div><div class="ln"><span class="n">6</span><span>  <span class="bf">__syncthreads</span>();</span></div><div class="ln"><span class="n">7</span><span>  <span class="kw">for</span> (<span class="ty">int</span> <span class="lc">d</span> = <span class="bi">blockDim</span>.<span class="bi">x</span> / <span class="nu">2</span>; <span class="lc">d</span> &gt; <span class="nu">0</span>; <span class="lc">d</span> /= <span class="nu">2</span>) {</span></div><div class="ln"><span class="n">8</span><span>    <span class="kw">if</span> (<span class="lc">tid</span> &lt; <span class="lc">d</span>) <span class="sh">s</span>[<span class="lc">tid</span>] += <span class="sh">s</span>[<span class="lc">tid</span> + <span class="lc">d</span>];</span></div><div class="ln"><span class="n">9</span><span>    <span class="bf">__syncthreads</span>();</span></div><div class="ln"><span class="n">10</span><span>  }</span></div><div class="ln"><span class="n">11</span><span>  <span class="kw">if</span> (<span class="lc">tid</span> == <span class="nu">0</span>) <span class="bf">atomicAdd</span>(&amp;<span class="ar">out</span>[<span class="nu">0</span>], <span class="sh">s</span>[<span class="nu">0</span>]);</span></div><div class="ln"><span class="n">12</span><span>}</span></div></div>
   <article class="card">
     <div class="head"><span class="sig"><span class="k">dot</span>(<span class="ty">int*</span> <var>out</var>, <span class="ty">int*</span> <var>x</var>, <span class="ty">int*</span> <var>y</var>, <span class="ty">int</span> <var>n</var>) <span class="launch">1-D launch</span></span><span class="pill proved">✓ proved</span></div>
     <div class="rows">
@@ -164,9 +178,9 @@ table.suite td:last-child { white-space: nowrap; }
   </article>
 </div>
 </section><section class="ex">
-<div class="exhead"><a href="publish.html"><code>publish</code></a> <span class="meta">two warps communicate through a release/acquire flag, no barrier; proved from the PTX axioms</span></div>
+<div class="exhead"><a href="kernels.html#publish"><code>publish</code></a> <span class="meta">two warps communicate through a release/acquire flag, no barrier; proved from the PTX axioms · <a href="kernels.html#publish">proof</a></span></div>
 <div class="grid">
-  <div class="code"><div class="ln"><span class="n">1</span><span><span class="kw">__global__</span> <span class="kw">void</span> publish(<span class="kw">int</span>* out, <span class="kw">int</span>* data, <span class="kw">int</span>* flag, <span class="kw">int</span>* src) {</span></div><div class="ln"><span class="n">2</span><span>  <span class="kw">int</span> lane = <span class="bi">threadIdx.x</span> % <span class="nu">32</span>;</span></div><div class="ln"><span class="n">3</span><span>  <span class="kw">if</span> (<span class="bi">threadIdx.x</span> &lt; <span class="nu">32</span>) {</span></div><div class="ln"><span class="n">4</span><span>    data[lane] = src[lane];</span></div><div class="ln"><span class="n">5</span><span>    cuda::atomic_ref&lt;<span class="kw">int</span>, cuda::thread_scope_block&gt; f(flag[lane]);</span></div><div class="ln"><span class="n">6</span><span>    f.store(<span class="nu">1</span>, cuda::memory_order_release);</span></div><div class="ln"><span class="n">7</span><span>  } <span class="kw">else</span> {</span></div><div class="ln"><span class="n">8</span><span>    cuda::atomic_ref&lt;<span class="kw">int</span>, cuda::thread_scope_block&gt; f(flag[lane]);</span></div><div class="ln"><span class="n">9</span><span>    <span class="kw">while</span> (f.load(cuda::memory_order_acquire) == <span class="nu">0</span>) {}</span></div><div class="ln"><span class="n">10</span><span>    out[lane] = data[lane];</span></div><div class="ln"><span class="n">11</span><span>  }</span></div><div class="ln"><span class="n">12</span><span>}</span></div></div>
+  <div class="code"><div class="ln"><span class="n">1</span><span><span class="ql">__global__</span> <span class="ty">void</span> <span class="fn">publish</span>(<span class="ty">int</span>* <span class="ar">out</span>, <span class="ty">int</span>* <span class="ar">data</span>, <span class="ty">int</span>* <span class="ar">flag</span>, <span class="ty">int</span>* <span class="ar">src</span>) {</span></div><div class="ln"><span class="n">2</span><span>  <span class="ty">int</span> <span class="lc">lane</span> = <span class="bi">threadIdx</span>.<span class="bi">x</span> % <span class="nu">32</span>;</span></div><div class="ln"><span class="n">3</span><span>  <span class="kw">if</span> (<span class="bi">threadIdx</span>.<span class="bi">x</span> &lt; <span class="nu">32</span>) {</span></div><div class="ln"><span class="n">4</span><span>    <span class="ar">data</span>[<span class="lc">lane</span>] = <span class="ar">src</span>[<span class="lc">lane</span>];</span></div><div class="ln"><span class="n">5</span><span>    <span class="ty">cuda::atomic_ref</span>&lt;<span class="ty">int</span>, <span class="cs">cuda::thread_scope_block</span>&gt; <span class="rf">f</span>(<span class="ar">flag</span>[<span class="lc">lane</span>]);</span></div><div class="ln"><span class="n">6</span><span>    <span class="rf">f</span>.<span class="me">store</span>(<span class="nu">1</span>, <span class="cs">cuda::memory_order_release</span>);</span></div><div class="ln"><span class="n">7</span><span>  } <span class="kw">else</span> {</span></div><div class="ln"><span class="n">8</span><span>    <span class="ty">cuda::atomic_ref</span>&lt;<span class="ty">int</span>, <span class="cs">cuda::thread_scope_block</span>&gt; <span class="rf">f</span>(<span class="ar">flag</span>[<span class="lc">lane</span>]);</span></div><div class="ln"><span class="n">9</span><span>    <span class="kw">while</span> (<span class="rf">f</span>.<span class="me">load</span>(<span class="cs">cuda::memory_order_acquire</span>) == <span class="nu">0</span>) {}</span></div><div class="ln"><span class="n">10</span><span>    <span class="ar">out</span>[<span class="lc">lane</span>] = <span class="ar">data</span>[<span class="lc">lane</span>];</span></div><div class="ln"><span class="n">11</span><span>  }</span></div><div class="ln"><span class="n">12</span><span>}</span></div></div>
   <article class="card">
     <div class="head"><span class="sig"><span class="k">publish</span>(<span class="ty">int*</span> <var>out</var>, <span class="ty">int*</span> <var>data</var>, <span class="ty">int*</span> <var>flag</var>, <span class="ty">int*</span> <var>src</var>) <span class="launch">1-D launch · PTX machine</span></span><span class="pill proved">✓ proved</span></div>
     <div class="rows">
@@ -185,4 +199,4 @@ table.suite td:last-child { white-space: nowrap; }
   </article>
 </div>
 </section>
-</main></body></html>
+</main></div></body></html>

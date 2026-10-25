@@ -5,6 +5,7 @@
   --bg: #fbfaf7; --panel: #ffffff; --ink: #1d1d1f; --muted: #6b6b70; --rule: #e6e3dc;
   --code-bg: #f6f4ef; --hl: #fff1c2; --link: #fff7dc;
   --kw: #8a3ffc; --bi: #0f6fb8; --nu: #b45309; --st: #15803d; --cm: #8b8b93;
+  --ty: #0b7285; --ql: #7c3aed; --fn: #1d4ed8; --bf: #c2410c; --ar: #0f766e; --sh: #a16207; --pm: #374151; --lc: #1f2937; --rf: #be185d; --cs: #7c2d12;
   --ok: #157f3b; --ok-bg: #e3f4e8; --ok-rule: #2f9e57; --ok-hover: #f1faf3;
   --warn: #9a6100; --warn-bg: #fdf0d5; --bad: #b42318; --bad-bg: #fde4e1;
   --idle: #5b5b63; --idle-bg: #ececef; --note-rule: #b9b8bd;
@@ -14,6 +15,7 @@
     --bg: #141416; --panel: #1b1b1e; --ink: #e8e6e1; --muted: #9a9aa2; --rule: #2c2c31;
     --code-bg: #18181b; --hl: #3a3215; --link: #2a2614;
     --kw: #c4a1ff; --bi: #6cb6ff; --nu: #f0a35e; --st: #6fd08c; --cm: #74747c;
+    --ty: #67e8f9; --ql: #c4b5fd; --fn: #93c5fd; --bf: #fdba74; --ar: #5eead4; --sh: #fde047; --pm: #d1d5db; --lc: #e5e7eb; --rf: #f9a8d4; --cs: #fca5a5;
     --ok: #6fd08c; --ok-bg: #16301f; --ok-rule: #3f9e63; --ok-hover: #182a1e;
     --warn: #f0c35e; --warn-bg: #352a12; --bad: #ff8a80; --bad-bg: #3a1714;
     --idle: #b0b0b8; --idle-bg: #2a2a2f; --note-rule: #55555c;
@@ -32,7 +34,7 @@ h1 { font: 600 22px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; margin: 
 @media (max-width: 960px) { .grid { grid-template-columns: minmax(0, 1fr); } .summary { margin-left: 0; } }
 section h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
   font-weight: 600; margin: 0 0 8px; }
-.code { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 8px; overflow-x: auto;
+.code { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 10px; overflow-x: auto; box-shadow: 0 1px 2px rgba(0,0,0,.06), inset 0 0 0 1px rgba(255,255,255,.4);
   font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 8px 0; }
 .code .ln { display: flex; padding: 0 14px 0 0; white-space: pre; }
 .code .ln .n { flex: none; width: 3.2em; text-align: right; padding-right: 14px; color: var(--muted);
@@ -42,6 +44,9 @@ section h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; 
 .code .ln.link { background: var(--link); }
 .kw { color: var(--kw); } .bi { color: var(--bi); } .nu { color: var(--nu); } .st { color: var(--st); }
 .cm { color: var(--cm); font-style: italic; }
+.ty { color: var(--ty); } .ql { color: var(--ql); font-style: italic; } .fn { color: var(--fn); font-weight: 600; }
+.bf { color: var(--bf); font-weight: 600; } .ar { color: var(--ar); font-weight: 600; } .sh { color: var(--sh); font-weight: 600; }
+.pm { color: var(--pm); } .lc { color: var(--lc); } .rf { color: var(--rf); } .me { color: var(--bf); } .cs { color: var(--cs); }
 .sticky { position: sticky; top: 16px; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--muted);
   background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 8px 12px; margin-bottom: 14px; }
@@ -103,7 +108,7 @@ a { color: inherit; }
 </header>
 <div class="grid">
   <section class="sticky"><h2>CUDA source</h2>
-    <div class="code" id="src"><div class="ln k"><span class="n">1</span><span><span class="kw">__global__</span> <span class="kw">void</span> gridstride(<span class="kw">int</span>* out, <span class="kw">int</span> n) {</span></div><div class="ln k"><span class="n">2</span><span>  <span class="kw">int</span> stride = <span class="bi">gridDim.x</span> * <span class="bi">blockDim.x</span>;</span></div><div class="ln k"><span class="n">3</span><span>  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="bi">blockIdx.x</span> * <span class="bi">blockDim.x</span> + <span class="bi">threadIdx.x</span>; i &lt; n; i += stride)</span></div><div class="ln k"><span class="n">4</span><span>    out[i] = <span class="nu">2</span> * i;</span></div><div class="ln k"><span class="n">5</span><span>}</span></div></div>
+    <div class="code" id="src"><div class="ln k"><span class="n">1</span><span><span class="ql">__global__</span> <span class="ty">void</span> <span class="fn">gridstride</span>(<span class="ty">int</span>* <span class="ar">out</span>, <span class="ty">int</span> <span class="pm">n</span>) {</span></div><div class="ln k"><span class="n">2</span><span>  <span class="ty">int</span> <span class="lc">stride</span> = <span class="bi">gridDim</span>.<span class="bi">x</span> * <span class="bi">blockDim</span>.<span class="bi">x</span>;</span></div><div class="ln k"><span class="n">3</span><span>  <span class="kw">for</span> (<span class="ty">int</span> <span class="lc">i</span> = <span class="bi">blockIdx</span>.<span class="bi">x</span> * <span class="bi">blockDim</span>.<span class="bi">x</span> + <span class="bi">threadIdx</span>.<span class="bi">x</span>; <span class="lc">i</span> &lt; <span class="pm">n</span>; <span class="lc">i</span> += <span class="lc">stride</span>)</span></div><div class="ln k"><span class="n">4</span><span>    <span class="ar">out</span>[<span class="lc">i</span>] = <span class="nu">2</span> * <span class="lc">i</span>;</span></div><div class="ln k"><span class="n">5</span><span>}</span></div></div>
   </section>
   <section><h2>Contracts</h2>
     <div class="legend"><span><span class="tag c">checked</span> becomes a Lean statement and is proved · hover to see it</span><span><span class="tag n">note</span> prose for the reader · not checked</span></div>
